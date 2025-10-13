@@ -1,0 +1,26 @@
+{
+  "development": {
+    "username": "zainjr",
+    "password": null,
+    "database": "Invisio",
+    "host": "localhost",
+    "port": 5432,
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "zainjr",
+    "password": null,
+    "database": "Invisio_test",
+    "host": "localhost",
+    "port": 5432,
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "zainjr",
+    "password": null,
+    "database": "Invisio_prod",
+    "host": "localhost",
+    "port": 5432,
+    "dialect": "postgres"
+  }
+}
