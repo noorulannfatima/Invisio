@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Express + PostgreSQL + Sequelize backend",
   "main": "app.js",
+  
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
@@ -11,7 +12,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",

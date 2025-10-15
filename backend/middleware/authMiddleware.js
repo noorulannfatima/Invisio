@@ -1,78 +1,61 @@
-// middleware/authMiddleware.js
-
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+// Load the User model from the central models index
+const { User } = require('../models'); 
 
-// Protect routes - verify JWT token
-exports.protect = async (req, res, next) => {
-  try {
-    let token;
-
-    // Check for token in cookies or Authorization header
-    if (req.cookies.token) {
-      token = req.cookies.token;
-    } else if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer')
-    ) {
-      token = req.headers.authorization.split(' ')[1];
-    }
-
-    // Check if token exists
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized, no token provided'
-      });
-    }
-
+/**
+ * Middleware to protect routes by verifying access token
+ */
+const protectRoute = async (req, res, next) => {
     try {
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // Extract access token from HTTP-only cookies
+        const accessToken = req.cookies.accessToken;
+        
+        if (!accessToken) {
+            return res.status(401).json({ message: "Unauthorized - No access token provided" });
+        }
+        
+        try {
+            // Verify JWT token using the secret used in the authController
+            const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+            
+            const userId = decoded.userId;
 
-      // Check if user still exists
-      const user = await User.findByPk(decoded.userId, {
-        attributes: { exclude: ['Password_Hash'] }
-      });
+            if (!userId) {
+                return res.status(401).json({ message: "Invalid token payload" });
+            }
 
-      if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'User no longer exists'
-        });
-      }
+            // Load user data using findByPk (Sequelize primary key lookup)
+            const user = await User.findByPk(userId, {
+                // Exclude the sensitive password hash field
+                attributes: { exclude: ['Password_Hash'] } 
+            });
 
-      // Check if user is deleted
-      if (user.is_deleted) {
-        return res.status(403).json({
-          success: false,
-          message: 'Account has been deactivated'
-        });
-      }
+            if (!user) {
+                return res.status(401).json({ message: "User not found or deleted" });
+            }
 
-      // Attach user to request object
-      req.user = {
-        userId: user.User_ID,
-        username: user.Username,
-        email: user.Email
-      };
+            // Attach user object to the request
+            req.user = user;
+            
+            next();
 
-      next();
+        } catch (error) {
+            // Handle specific JWT errors
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json({ message: "Unauthorized - Access token expired" });
+            }
+            if (error.name === "JsonWebTokenError") {
+                 return res.status(401).json({ message: "Unauthorized - Invalid access token signature" });
+            }
 
-    } catch (err) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized, token invalid or expired'
-      });
+            throw error;
+        }
+    } catch (error) {
+        console.log("Error in protectRoute middleware", error.message);
+        return res.status(401).json({ message: "Unauthorized - Authentication failed" });
     }
-
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: error.message
-    });
-  }
 };
 
+module.exports = {
+  protectRoute
+};

@@ -1,17 +1,16 @@
-// app.js
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const { sequelize } = require("./models");
-const authRoutes = require("./routes/authRoutes");
+
+const authRoutes = require("./routes/authRoutes"); 
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- Middleware Setup ---
 app.use(cookieParser());
 app.use(cors({
     origin: true, // Allows requests from any origin
@@ -30,7 +29,7 @@ app.get("/", (req, res) => {
 
 const startServer = async () => {
   try {
-
+    // Authenticate Sequelize connection
     await sequelize.authenticate();
     console.log("✅ Database connected successfully.");
 
