@@ -2,9 +2,6 @@ const jwt = require('jsonwebtoken');
 // Load the User model from the central models index
 const { User } = require('../models'); 
 
-/**
- * Middleware to protect routes by verifying access token
- */
 const protectRoute = async (req, res, next) => {
     try {
         // Extract access token from HTTP-only cookies

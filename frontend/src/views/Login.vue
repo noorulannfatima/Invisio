@@ -16,7 +16,7 @@
               type="email"
               placeholder="Enter your email"
               required
-              :disabled="loading"
+              :disabled="authStore.isLoading"
             />
           </div>
 
@@ -28,7 +28,7 @@
               type="password"
               placeholder="Enter your password"
               required
-              :disabled="loading"
+              :disabled="authStore.isLoading"
             />
           </div>
 
@@ -40,13 +40,13 @@
             <a href="#" class="forgot-password">Forgot password?</a>
           </div>
 
-          <button type="submit" class="auth-button" :disabled="loading">
-            <span v-if="loading">Signing in...</span>
+          <button type="submit" class="auth-button" :disabled="authStore.isLoading">
+            <span v-if="authStore.isLoading">Signing in...</span>
             <span v-else>Sign In</span>
           </button>
 
-          <div v-if="error" class="error-message">
-            {{ error }}
+          <div v-if="authStore.error" class="error-message">
+            {{ authStore.error }}
           </div>
         </form>
 
@@ -61,12 +61,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { reactive, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/authStore'
 
 const router = useRouter()
-const loading = ref(false)
-const error = ref('')
+const authStore = useAuthStore()
 
 const form = reactive({
   email: '',
@@ -74,24 +74,33 @@ const form = reactive({
   rememberMe: false
 })
 
+// Clear any previous errors when component mounts
+onMounted(() => {
+  authStore.clearError()
+})
+
+// Clear errors when component unmounts
+onUnmounted(() => {
+  authStore.clearError()
+})
+
 const handleLogin = async (): Promise<void> => {
   try {
-    loading.value = true
-    error.value = ''
+    // Clear any previous errors
+    authStore.clearError()
 
-    // Add your authentication logic here
-    console.log('Login attempt:', form)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Attempt login with the auth store
+    await authStore.login({
+      Email: form.email,
+      Password: form.password
+    })
     
     // On successful login, redirect to dashboard
     router.push('/dashboard')
     
   } catch (err) {
-    error.value = 'Invalid email or password. Please try again.'
-  } finally {
-    loading.value = false
+    // Error is already set in the store, just log it
+    console.error('Login failed:', err)
   }
 }
 </script>

@@ -3,7 +3,7 @@
     <div class="faq-container">
       <div class="faq-header">
         <h2 class="fade-in-up">Frequently Asked Questions</h2>
-        <p class="fade-in-up delay-1">Get answers to common questions about Vyapar Clone</p>
+        <p class="fade-in-up delay-1">Get answers to common questions about Invisio</p>
       </div>
 
       <div class="faq-grid">
@@ -76,16 +76,8 @@ const activeFaq = ref<number | null>(null)
 
 const faqs = ref<FAQ[]>([
   {
-    question: "What is Vyapar Clone?",
-    answer: "Vyapar Clone is a comprehensive GST billing software designed specifically for small businesses in India. It helps you track sales, manage inventory, generate GST-compliant invoices, and maintain financial records effortlessly."
-  },
-  {
-    question: "Is GST compliance included?",
-    answer: "Yes! Our software is fully GST-compliant and automatically generates all required GST reports including GSTR-1, GSTR-3B, and other statutory reports. You can file your GST returns directly from the platform."
-  },
-  {
-    question: "Can I use it offline?",
-    answer: "Absolutely! Vyapar Clone works both online and offline. You can continue working even without an internet connection, and all your data will sync automatically when you're back online."
+    question: "What is Invisio?",
+    answer: "Invisio is a comprehensive GST billing software designed specifically for small businesses in Pakistan. It helps you track sales, manage inventory, generate invoices, and maintain financial records effortlessly."
   },
   {
     question: "What about data security?",

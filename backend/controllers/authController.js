@@ -2,14 +2,14 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { User } = require('../models'); 
 
-//Generate JWT access and refresh tokens for a user
+//JWT access and refresh tokens for a user
 const generateTokens = (userId) => {
-  // Generate short-lived access token (15 minutes)
+  // short-lived access token (15 minutes)
   const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: "15m",
   });
 
-  // Generate long-lived refresh token (7 days)
+  // long-lived refresh token (7 days)
   const refreshToken = jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
@@ -18,7 +18,7 @@ const generateTokens = (userId) => {
 };
 // Set HTTP-only cookies for access and refresh tokens
 const setCookies = (res, accessToken, refreshToken) => {
-  // Set access token cookie (15 minutes)
+  //  access token cookie (15 minutes)
   res.cookie("accessToken", accessToken, {
     httpOnly: true, // Prevent XSS attacks
     secure: process.env.NODE_ENV === "production", // HTTPS only in production
@@ -26,7 +26,7 @@ const setCookies = (res, accessToken, refreshToken) => {
     maxAge: 15 * 60 * 1000, // 15 minutes
   });
   
-  // Set refresh token cookie (7 days)
+  // refresh token cookie (7 days)
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true, // Prevent XSS attacks
     secure: process.env.NODE_ENV === "production", // HTTPS only in production

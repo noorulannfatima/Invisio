@@ -8,6 +8,7 @@
         </div>
 
         <form @submit.prevent="handleRegister" class="auth-form">
+          <!-- Row 1: First Name and Last Name -->
           <div class="form-row">
             <div class="form-group">
               <label for="firstName">First Name</label>
@@ -17,7 +18,7 @@
                 type="text"
                 placeholder="Enter your first name"
                 required
-                :disabled="loading"
+                :disabled="authStore.isLoading"
               />
             </div>
             
@@ -29,50 +30,75 @@
                 type="text"
                 placeholder="Enter your last name"
                 required
-                :disabled="loading"
+                :disabled="authStore.isLoading"
               />
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="email">Email Address</label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              placeholder="Enter your email"
-              required
-              :disabled="loading"
-            />
-          </div>
+          <!-- Row 2: Email and Mobile Number -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input
+                id="email"
+                v-model="form.email"
+                type="email"
+                placeholder="Enter your email"
+                required
+                :disabled="authStore.isLoading"
+              />
+            </div>
 
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              placeholder="Create a strong password"
-              required
-              :disabled="loading"
-            />
-            <div class="password-requirements">
-              <small>Password must be at least 8 characters long</small>
+            <div class="form-group">
+              <label for="mobileNumber">Mobile Number</label>
+              <input
+                id="mobileNumber"
+                v-model="form.mobileNumber"
+                type="tel"
+                placeholder="Enter mobile number"
+                required
+                :disabled="authStore.isLoading"
+                minlength="10"
+                maxlength="20"
+              />
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              v-model="form.confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              required
-              :disabled="loading"
-            />
+          <!-- Row 3: Password and Confirm Password -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                id="password"
+                v-model="form.password"
+                type="password"
+                placeholder="Create a strong password"
+                required
+                :disabled="authStore.isLoading"
+                minlength="8"
+              />
+              <div class="password-requirements">
+                <small>At least 8 characters</small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input
+                id="confirmPassword"
+                v-model="form.confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                required
+                :disabled="authStore.isLoading"
+              />
+              <div v-if="form.confirmPassword && form.password !== form.confirmPassword" class="validation-error">
+                <small>Passwords do not match</small>
+              </div>
+            </div>
           </div>
 
+          <!-- Terms Checkbox -->
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
               <input v-model="form.acceptTerms" type="checkbox" required>
@@ -80,13 +106,13 @@
             </label>
           </div>
 
-          <button type="submit" class="auth-button" :disabled="loading || !isFormValid">
-            <span v-if="loading">Creating Account...</span>
+          <button type="submit" class="auth-button" :disabled="authStore.isLoading || !isFormValid">
+            <span v-if="authStore.isLoading">Creating Account...</span>
             <span v-else>Create Account</span>
           </button>
 
-          <div v-if="error" class="error-message">
-            {{ error }}
+          <div v-if="authStore.error" class="error-message">
+            {{ authStore.error }}
           </div>
         </form>
 
@@ -101,17 +127,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/authStore'
 
 const router = useRouter()
-const loading = ref(false)
-const error = ref('')
+const authStore = useAuthStore()
 
 const form = reactive({
   firstName: '',
   lastName: '',
   email: '',
+  mobileNumber: '',
   password: '',
   confirmPassword: '',
   acceptTerms: false
@@ -119,43 +146,59 @@ const form = reactive({
 
 // Computed property for form validation
 const isFormValid = computed(() => {
-  return form.firstName.trim() !== '' &&
-         form.lastName.trim() !== '' &&
-         form.email.trim() !== '' &&
-         form.password.length >= 8 &&
-         form.password === form.confirmPassword &&
-         form.acceptTerms
+  const username = `${form.firstName.trim()} ${form.lastName.trim()}`
+  return (
+    form.firstName.trim() !== '' &&
+    form.lastName.trim() !== '' &&
+    username.length >= 3 &&
+    username.length <= 50 &&
+    form.email.trim() !== '' &&
+    form.mobileNumber.trim().length >= 10 &&
+    form.mobileNumber.trim().length <= 20 &&
+    form.password.length >= 8 &&
+    form.password === form.confirmPassword &&
+    form.acceptTerms
+  )
+})
+
+// Clear any previous errors when component mounts
+onMounted(() => {
+  authStore.clearError()
+})
+
+// Clear errors when component unmounts
+onUnmounted(() => {
+  authStore.clearError()
 })
 
 // Handle registration
 const handleRegister = async () => {
   if (!isFormValid.value) {
-    error.value = 'Please fill all fields correctly'
     return
   }
 
-  loading.value = true
-  error.value = ''
-
   try {
-    // TODO: Replace with actual API call
-    console.log('Registration data:', {
-      firstName: form.firstName,
-      lastName: form.lastName,
-      email: form.email,
-      password: form.password
+    // Clear any previous errors
+    authStore.clearError()
+
+    // Combine first and last name to create username
+    const username = `${form.firstName.trim()} ${form.lastName.trim()}`
+
+    // Attempt signup with the auth store
+    await authStore.signup({
+      Username: username,
+      Email: form.email.trim(),
+      Mobile_Number: form.mobileNumber.trim(),
+      Password: form.password
     })
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    // On success, redirect to login or dashboard
-    router.push('/login')
+    // On success, redirect to dashboard
+    // User is automatically logged in after signup
+    router.push('/dashboard')
+    
   } catch (err) {
-    error.value = 'Registration failed. Please try again.'
-    console.error('Registration error:', err)
-  } finally {
-    loading.value = false
+    // Error is already set in the store, just log it
+    console.error('Registration failed:', err)
   }
 }
 </script>
@@ -171,8 +214,9 @@ const handleRegister = async () => {
 }
 
 .auth-container {
+  margin-top: 5%;
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
 }
 
 .auth-card {
@@ -194,8 +238,12 @@ const handleRegister = async () => {
   h1 {
     font-size: 2rem;
     font-weight: 800;
-    color: #1f2937;
+    color: #1a202c;
     margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #052f56 0%, #2563eb 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   p {
@@ -206,20 +254,21 @@ const handleRegister = async () => {
 
 .auth-form {
   .form-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-bottom: 1.5rem;
 
-    @media (max-width: 768px) {
-      flex-direction: column;
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
       gap: 0;
+      margin-bottom: 0;
     }
 
     .form-group {
-      flex: 1;
       margin-bottom: 0;
 
-      @media (max-width: 768px) {
+      @media (max-width: 640px) {
         margin-bottom: 1.5rem;
       }
     }
@@ -238,6 +287,7 @@ const handleRegister = async () => {
 
     input[type="text"],
     input[type="email"],
+    input[type="tel"],
     input[type="password"] {
       width: 100%;
       padding: 0.875rem 1rem;
@@ -269,6 +319,15 @@ const handleRegister = async () => {
 
       small {
         color: #6b7280;
+        font-size: 0.8rem;
+      }
+    }
+
+    .validation-error {
+      margin-top: 0.5rem;
+
+      small {
+        color: #dc2626;
         font-size: 0.8rem;
       }
     }
@@ -319,6 +378,7 @@ const handleRegister = async () => {
     cursor: pointer;
     transition: all 0.3s ease;
     margin-bottom: 1rem;
+    margin-top: 1rem;
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);

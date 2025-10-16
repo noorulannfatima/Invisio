@@ -12,7 +12,7 @@
             <div class="icon">📧</div>
             <div>
               <h3>Email</h3>
-              <p>support@vyaparclone.com</p>
+              <p>support@invisio.com</p>
             </div>
           </div>
           
@@ -20,7 +20,7 @@
             <div class="icon">📞</div>
             <div>
               <h3>Phone</h3>
-              <p>+91 98765 43210</p>
+              <p>+92 300 1234567</p>
             </div>
           </div>
           
@@ -28,7 +28,7 @@
             <div class="icon">📍</div>
             <div>
               <h3>Address</h3>
-              <p>Mumbai, Maharashtra, India</p>
+              <p>Gujranwala, Punjab, Pakistan</p>
             </div>
           </div>
         </div>
@@ -100,6 +100,7 @@ const form = reactive<ContactForm>({
 const handleSubmit = (): void => {
   // Handle form submission logic here
   console.log('Form submitted:', form)
+  alert('Thank you for contacting Invisio! We will get back to you soon.')
   // Reset form after submission
   Object.assign(form, { name: '', email: '', phone: '', message: '' })
 }
@@ -107,8 +108,12 @@ const handleSubmit = (): void => {
 
 <style lang="scss" scoped>
 .contact {
-  background: #f8fafc;
-  padding: 5rem 0;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  padding: 6rem 0;
+
+  @media (max-width: 768px) {
+    padding: 4rem 0;
+  }
 
   .container {
     max-width: 1200px;
@@ -118,20 +123,28 @@ const handleSubmit = (): void => {
 
   .contact-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
 
     h2 {
       font-size: 2.5rem;
-      font-weight: 700;
-      color: #2d3748;
+      font-weight: 800;
+      color: #052f56;
       margin-bottom: 1rem;
+
+      @media (max-width: 768px) {
+        font-size: 2rem;
+      }
     }
 
     p {
-      font-size: 1.1rem;
-      color: #718096;
+      font-size: 1.2rem;
+      color: #64748b;
       max-width: 600px;
       margin: 0 auto;
+
+      @media (max-width: 768px) {
+        font-size: 1rem;
+      }
     }
   }
 
@@ -141,7 +154,7 @@ const handleSubmit = (): void => {
     gap: 4rem;
     align-items: start;
 
-    @media (max-width: 768px) {
+    @media (max-width: 968px) {
       grid-template-columns: 1fr;
       gap: 3rem;
     }
@@ -152,80 +165,97 @@ const handleSubmit = (): void => {
       display: flex;
       align-items: flex-start;
       margin-bottom: 2rem;
-      padding: 1.5rem;
+      padding: 2rem;
       background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(37, 99, 235, 0.12);
+        border-color: #2563eb;
+      }
 
       .icon {
-        font-size: 2rem;
-        margin-right: 1rem;
+        font-size: 2.5rem;
+        margin-right: 1.5rem;
         margin-top: 0.2rem;
       }
 
       h3 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #2d3748;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #052f56;
         margin-bottom: 0.5rem;
       }
 
       p {
-        color: #718096;
+        color: #64748b;
         margin: 0;
+        font-size: 1rem;
       }
     }
   }
 
   .contact-form {
     background: #fff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e2e8f0;
+
+    @media (max-width: 768px) {
+      padding: 2rem;
+    }
 
     .form-group {
       margin-bottom: 1.5rem;
 
       input, textarea {
         width: 100%;
-        padding: 1rem;
+        padding: 1rem 1.2rem;
         border: 2px solid #e2e8f0;
-        border-radius: 8px;
+        border-radius: 10px;
         font-size: 1rem;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
+        font-family: inherit;
 
         &:focus {
           outline: none;
-          border-color: #3182ce;
-          box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+          border-color: #2563eb;
+          box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
         &::placeholder {
-          color: #a0aec0;
+          color: #94a3b8;
         }
       }
 
       textarea {
         resize: vertical;
-        min-height: 120px;
+        min-height: 140px;
       }
     }
 
     .submit-btn {
       width: 100%;
-      background: #3182ce;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       color: #fff;
-      padding: 1rem 2rem;
+      padding: 1.1rem 2rem;
       border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
 
       &:hover {
-        background: #2c5aa0;
-        transform: translateY(-1px);
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
       }
 
       &:active {
