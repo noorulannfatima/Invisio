@@ -10,10 +10,8 @@ Anytime, Anywhere
           <button class="cta fade-in-up delay-2">Get Started</button>
         </div>
         
-        <div class="hero-cards">
-          <div class="card bounce-in delay-3">📊 Track Sales</div>
-          <div class="card bounce-in delay-4">📦 Manage Inventory</div>
-          <div class="card bounce-in delay-5">💰 GST Reports</div>
+        <div class="hero-image">
+          <img src="@/assets/images/home.png" alt="Invisio Dashboard" class="fade-in-up delay-3" />
         </div>
       </div>
     </section>
@@ -170,86 +168,23 @@ import FAQ from '@/components/layout/FAQ.vue'
     }
   }
 
-  .hero-cards {
+  .hero-image {
     display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: flex-end;
+    justify-content: center;
+    align-items: center;
 
     @media (max-width: 1024px) {
-      flex-direction: row;
       justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1.5rem;
     }
 
-    @media (max-width: 640px) {
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 1.8rem 2.2rem;
+    img {
+      max-width: 100%;
+      height: auto;
+      filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
       border-radius: 20px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #fff;
-      text-align: center;
-      min-width: 220px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-      overflow: hidden;
 
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
-
-      &:nth-child(1) {
-        transform: translateX(20px);
-      }
-
-      &:nth-child(2) {
-        transform: translateX(10px);
-      }
-
-      &:nth-child(3) {
-        transform: translateX(0px);
-      }
-
-      &:hover {
-        transform: translateY(-8px) translateX(0) scale(1.05);
-        background: rgba(255, 255, 255, 0.25);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-
-        &::before {
-          opacity: 1;
-        }
-      }
-
-      @media (max-width: 1024px) {
-        &:nth-child(1),
-        &:nth-child(2),
-        &:nth-child(3) {
-          transform: none;
-        }
-      }
-
-      @media (max-width: 480px) {
-        padding: 1.5rem;
-        font-size: 1rem;
-        min-width: 200px;
+      @media (max-width: 768px) {
+        max-width: 90%;
       }
     }
   }
@@ -273,39 +208,13 @@ import FAQ from '@/components/layout/FAQ.vue'
   }
 }
 
-@keyframes bounce-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.3) translateY(50px);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.1) translateY(-10px);
-  }
-  70% {
-    transform: scale(0.9) translateY(5px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
 // Animation classes
 .fade-in-up {
   animation: fade-in-up 0.8s ease-out forwards;
   opacity: 0;
 }
-
-.bounce-in {
-  animation: bounce-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-  opacity: 0;
-}
-
 // Animation delays
 .delay-1 { animation-delay: 0.2s; }
 .delay-2 { animation-delay: 0.4s; }
 .delay-3 { animation-delay: 0.6s; }
-.delay-4 { animation-delay: 0.8s; }
-.delay-5 { animation-delay: 1s; }
 </style>

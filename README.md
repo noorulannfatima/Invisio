@@ -1,6 +1,7 @@
 
 ```
 Invisio
+├─ .DS_Store
 ├─ README.md
 ├─ backend
 │  ├─ .env
@@ -44,6 +45,7 @@ Invisio
 │     ├─ 20251010181637-demo-transaction-line-items.js
 │     └─ 20251010182807-demo-expenses.js
 └─ frontend
+   ├─ .DS_Store
    ├─ README.md
    ├─ index.html
    ├─ package-lock.json
@@ -51,63 +53,39 @@ Invisio
    ├─ public
    │  └─ vite.svg
    ├─ src
+   │  ├─ .DS_Store
    │  ├─ App.vue
    │  ├─ assets
+   │  │  ├─ .DS_Store
+   │  │  ├─ images
+   │  │  │  ├─ .DS_Store
+   │  │  │  └─ home.png
    │  │  ├─ styles
+   │  │  │  ├─ base.css
+   │  │  │  ├─ base.css.map
    │  │  │  ├─ base.scss
+   │  │  │  ├─ variables.css
+   │  │  │  ├─ variables.css.map
    │  │  │  └─ variables.scss
    │  │  └─ vue.svg
    │  ├─ components
-   │  │  ├─ auth
-   │  │  │  ├─ LoginForm.vue
-   │  │  │  └─ RegisterForm.vue
-   │  │  ├─ charts
-   │  │  ├─ common
-   │  │  ├─ forms
-   │  │  ├─ invoice
-   │  │  │  ├─ InvoicePreview.vue
-   │  │  │  ├─ InvoicePrint.vue
-   │  │  │  └─ InvoiceTemplate.vue
-   │  │  ├─ layout
-   │  │  │  ├─ Contact.vue
-   │  │  │  ├─ FAQ.vue
-   │  │  │  ├─ Features.vue
-   │  │  │  ├─ Footer.vue
-   │  │  │  └─ Navbar.vue
-   │  │  └─ tabels
-   │  ├─ composables
-   │  │  └─ useDashboard.ts
+   │  │  └─ layout
+   │  │     ├─ Contact.vue
+   │  │     ├─ FAQ.vue
+   │  │     ├─ Features.vue
+   │  │     ├─ Footer.vue
+   │  │     └─ Navbar.vue
    │  ├─ main.ts
    │  ├─ router
    │  │  └─ index.ts
+   │  ├─ store
+   │  │  └─ authStore.ts
    │  ├─ style.css
-   │  ├─ types
-   │  │  └─ dashboard.ts
    │  ├─ views
    │  │  ├─ Dashboard.vue
    │  │  ├─ Home.vue
    │  │  ├─ Login.vue
-   │  │  ├─ Profile.vue
-   │  │  ├─ Register.vue
-   │  │  ├─ customers
-   │  │  ├─ expenses
-   │  │  ├─ inventory
-   │  │  │  ├─ InventoryDashboard.vue
-   │  │  │  └─ InventoryList.vue
-   │  │  ├─ invoices
-   │  │  │  ├─ InvoiceCreate.vue
-   │  │  │  ├─ InvoiceDetail.vue
-   │  │  │  ├─ InvoiceEdit.vue
-   │  │  │  ├─ InvoiceList.vue
-   │  │  │  └─ InvoicePreview.vue
-   │  │  ├─ items
-   │  │  │  ├─ ItemCategory.vue
-   │  │  │  ├─ ItemCreate.vue
-   │  │  │  ├─ ItemDetail.vue
-   │  │  │  ├─ ItemEdit.vue
-   │  │  │  └─ ItemList.vue
-   │  │  ├─ payments
-   │  │  └─ purchases
+   │  │  └─ Register.vue
    │  └─ vite-env.d.ts
    ├─ tsconfig.app.json
    ├─ tsconfig.json

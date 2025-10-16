@@ -8,34 +8,24 @@
         </div>
 
         <form @submit.prevent="handleRegister" class="auth-form">
-          <!-- Row 1: First Name and Last Name -->
+          <!-- Row 1: Name  -->
           <div class="form-row">
             <div class="form-group">
-              <label for="firstName">First Name</label>
+              <label for="name">Full Name</label>
               <input
-                id="firstName"
-                v-model="form.firstName"
+                id="name"
+                v-model="form.name"
                 type="text"
-                placeholder="Enter your first name"
+                placeholder="Enter your full name"
                 required
                 :disabled="authStore.isLoading"
               />
-            </div>
-            
-            <div class="form-group">
-              <label for="lastName">Last Name</label>
-              <input
-                id="lastName"
-                v-model="form.lastName"
-                type="text"
-                placeholder="Enter your last name"
-                required
-                :disabled="authStore.isLoading"
-              />
+              <div v-if="validationErrors.name" class="validation-error">
+                <small>{{ validationErrors.name }}</small>
+              </div>
             </div>
           </div>
 
-          <!-- Row 2: Email and Mobile Number -->
           <div class="form-row">
             <div class="form-group">
               <label for="email">Email Address</label>
@@ -47,8 +37,14 @@
                 required
                 :disabled="authStore.isLoading"
               />
+              <div v-if="validationErrors.email" class="validation-error">
+                <small>{{ validationErrors.email }}</small>
+              </div>
             </div>
+          </div>
 
+          <!-- Row 2: Mobile Number -->
+          <div class="form-row">
             <div class="form-group">
               <label for="mobileNumber">Mobile Number</label>
               <input
@@ -61,6 +57,9 @@
                 minlength="10"
                 maxlength="20"
               />
+              <div v-if="validationErrors.mobileNumber" class="validation-error">
+                <small>{{ validationErrors.mobileNumber }}</small>
+              </div>
             </div>
           </div>
 
@@ -80,6 +79,9 @@
               <div class="password-requirements">
                 <small>At least 8 characters</small>
               </div>
+              <div v-if="validationErrors.password" class="validation-error">
+                <small>{{ validationErrors.password }}</small>
+              </div>
             </div>
 
             <div class="form-group">
@@ -92,8 +94,8 @@
                 required
                 :disabled="authStore.isLoading"
               />
-              <div v-if="form.confirmPassword && form.password !== form.confirmPassword" class="validation-error">
-                <small>Passwords do not match</small>
+              <div v-if="validationErrors.confirmPassword" class="validation-error">
+                <small>{{ validationErrors.confirmPassword }}</small>
               </div>
             </div>
           </div>
@@ -101,12 +103,23 @@
           <!-- Terms Checkbox -->
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
-              <input v-model="form.acceptTerms" type="checkbox" required>
-              <span>I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a></span>
+              <input v-model="form.acceptTerms" type="checkbox" required />
+              <span>
+                I agree to the
+                <a href="#" class="terms-link">Terms of Service</a> and
+                <a href="#" class="terms-link">Privacy Policy</a>
+              </span>
             </label>
+            <div v-if="validationErrors.acceptTerms" class="validation-error">
+              <small>{{ validationErrors.acceptTerms }}</small>
+            </div>
           </div>
 
-          <button type="submit" class="auth-button" :disabled="authStore.isLoading || !isFormValid">
+          <button
+            type="submit"
+            class="auth-button"
+            :disabled="authStore.isLoading || !isFormValid"
+          >
             <span v-if="authStore.isLoading">Creating Account...</span>
             <span v-else>Create Account</span>
           </button>
@@ -114,10 +127,15 @@
           <div v-if="authStore.error" class="error-message">
             {{ authStore.error }}
           </div>
+
+          <div v-if="successMessage" class="success-message">
+            {{ successMessage }}
+          </div>
         </form>
 
         <div class="auth-footer">
-          <p>Already have an account? 
+          <p>
+            Already have an account?
             <router-link to="/login" class="auth-link">Sign in</router-link>
           </p>
         </div>
@@ -127,16 +145,16 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onMounted, onUnmounted } from 'vue'
+import { reactive, computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/authStore'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const successMessage = ref<string>('')
 
 const form = reactive({
-  firstName: '',
-  lastName: '',
+  name: '',
   email: '',
   mobileNumber: '',
   password: '',
@@ -144,14 +162,73 @@ const form = reactive({
   acceptTerms: false
 })
 
+const validationErrors = reactive({
+  name: '',
+  email: '',
+  mobileNumber: '',
+  password: '',
+  confirmPassword: '',
+  acceptTerms: ''
+})
+
+// Validate individual fields
+const validateField = (fieldName: string): string => {
+  switch (fieldName) {
+    case 'name':
+      if (!form.name.trim()) return 'Full name is required'
+      if (form.name.trim().length < 3) return 'Name must be at least 3 characters'
+      if (form.name.trim().length > 50) return 'Name must not exceed 50 characters'
+      return ''
+
+    case 'email':
+      if (!form.email.trim()) return 'Email is required'
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(form.email.trim())) return 'Please enter a valid email'
+      return ''
+
+    case 'mobileNumber':
+      if (!form.mobileNumber.trim()) return 'Mobile number is required'
+      if (form.mobileNumber.trim().length < 10) return 'Mobile number must be at least 10 digits'
+      if (form.mobileNumber.trim().length > 20) return 'Mobile number must not exceed 20 digits'
+      if (!/^\d+$/.test(form.mobileNumber.trim())) return 'Mobile number must contain only digits'
+      return ''
+
+    case 'password':
+      if (!form.password) return 'Password is required'
+      if (form.password.length < 8) return 'Password must be at least 8 characters'
+      return ''
+
+    case 'confirmPassword':
+      if (!form.confirmPassword) return 'Please confirm your password'
+      if (form.password !== form.confirmPassword) return 'Passwords do not match'
+      return ''
+
+    case 'acceptTerms':
+      if (!form.acceptTerms) return 'You must accept the terms and privacy policy'
+      return ''
+
+    default:
+      return ''
+  }
+}
+
+// Validate all fields
+const validateForm = (): boolean => {
+  validationErrors.name = validateField('name')
+  validationErrors.email = validateField('email')
+  validationErrors.mobileNumber = validateField('mobileNumber')
+  validationErrors.password = validateField('password')
+  validationErrors.confirmPassword = validateField('confirmPassword')
+  validationErrors.acceptTerms = validateField('acceptTerms')
+
+  return !Object.values(validationErrors).some(err => err !== '')
+}
+
 // Computed property for form validation
 const isFormValid = computed(() => {
-  const username = `${form.firstName.trim()} ${form.lastName.trim()}`
   return (
-    form.firstName.trim() !== '' &&
-    form.lastName.trim() !== '' &&
-    username.length >= 3 &&
-    username.length <= 50 &&
+    form.name.trim().length >= 3 &&
+    form.name.trim().length <= 50 &&
     form.email.trim() !== '' &&
     form.mobileNumber.trim().length >= 10 &&
     form.mobileNumber.trim().length <= 20 &&
@@ -161,44 +238,46 @@ const isFormValid = computed(() => {
   )
 })
 
-// Clear any previous errors when component mounts
+// Clear errors on mount/unmount
 onMounted(() => {
   authStore.clearError()
+  successMessage.value = ''
 })
 
-// Clear errors when component unmounts
 onUnmounted(() => {
   authStore.clearError()
 })
 
 // Handle registration
 const handleRegister = async () => {
-  if (!isFormValid.value) {
+  // Clear previous messages
+  successMessage.value = ''
+  authStore.clearError()
+
+  // Validate form before submission
+  if (!validateForm()) {
     return
   }
 
   try {
-    // Clear any previous errors
-    authStore.clearError()
-
-    // Combine first and last name to create username
-    const username = `${form.firstName.trim()} ${form.lastName.trim()}`
-
-    // Attempt signup with the auth store
+    // Call authStore signup action
     await authStore.signup({
-      Username: username,
+      Username: form.name.trim(),
       Email: form.email.trim(),
       Mobile_Number: form.mobileNumber.trim(),
       Password: form.password
     })
 
-    // On success, redirect to dashboard
-    // User is automatically logged in after signup
-    router.push('/dashboard')
-    
-  } catch (err) {
-    // Error is already set in the store, just log it
+    // Show success message
+    successMessage.value = 'Account created successfully! Redirecting...'
+
+    // Redirect to dashboard after brief delay
+    setTimeout(() => {
+      router.push('/dashboard')
+    }, 1500)
+  } catch (err: any) {
     console.error('Registration failed:', err)
+    // Error is already set in authStore.error by the signup action
   }
 }
 </script>
@@ -404,6 +483,18 @@ const handleRegister = async () => {
     font-size: 0.9rem;
     text-align: center;
     border: 1px solid #fca5a5;
+    margin-bottom: 1rem;
+  }
+
+  .success-message {
+    background: #dcfce7;
+    color: #16a34a;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    text-align: center;
+    border: 1px solid #86efac;
+    margin-bottom: 1rem;
   }
 }
 

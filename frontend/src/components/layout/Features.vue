@@ -2,15 +2,16 @@
   <section class="features">
     <div class="container">
       <div class="features-header">
-        <h2>Powerful Features for Your Business</h2>
-        <p>Everything you need to manage your business efficiently and grow faster</p>
+        <h2 class="fade-in-scroll">Powerful Features for Your Business</h2>
+        <p class="fade-in-scroll" style="animation-delay: 0.2s">Everything you need to manage your business efficiently and grow faster</p>
       </div>
 
       <div class="features-grid">
         <div 
-          v-for="feature in features" 
+          v-for="(feature, index) in features" 
           :key="feature.id" 
           class="feature-card"
+          :style="{ animationDelay: `${index * 0.1}s` }"
         >
           <div class="feature-icon">{{ feature.icon }}</div>
           <h3>{{ feature.title }}</h3>
@@ -23,7 +24,7 @@
         </div>
       </div>
 
-      <div class="features-cta">
+      <div class="features-cta fade-in-scroll" style="animation-delay: 0.3s">
         <h3>Ready to transform your business?</h3>
         <p>Join thousands of businesses already using our platform</p>
         <button class="cta-button">Start Free Trial</button>
@@ -33,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 interface Feature {
   id: number
@@ -117,6 +118,24 @@ const features = ref<Feature[]>([
     ]
   }
 ])
+
+onMounted(() => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view')
+        observer.unobserve(entry.target)
+      }
+    })
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  })
+
+  document.querySelectorAll('.feature-card, .fade-in-scroll').forEach((el) => {
+    observer.observe(el)
+  })
+})
 </script>
 
 <style lang="scss" scoped>
@@ -169,6 +188,12 @@ const features = ref<Feature[]>([
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    opacity: 0;
+    transform: translateY(30px);
+
+    &.in-view {
+      animation: slide-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
 
     &:hover {
       transform: translateY(-4px);
@@ -176,7 +201,7 @@ const features = ref<Feature[]>([
       border-color: #3182ce;
 
       .feature-icon {
-        transform: scale(1.1);
+        transform: scale(1.1) rotateZ(5deg);
       }
     }
 
@@ -211,6 +236,13 @@ const features = ref<Feature[]>([
         font-size: 0.9rem;
         display: flex;
         align-items: center;
+        opacity: 0;
+        animation: fade-in-benefits 0.5s ease-out forwards;
+
+        &:nth-child(1) { animation-delay: 0.1s; }
+        &:nth-child(2) { animation-delay: 0.2s; }
+        &:nth-child(3) { animation-delay: 0.3s; }
+        &:nth-child(4) { animation-delay: 0.4s; }
 
         &::before {
           content: '✓';
@@ -231,6 +263,15 @@ const features = ref<Feature[]>([
       height: 100%;
       background: radial-gradient(circle, rgba(49, 130, 206, 0.03) 0%, transparent 70%);
       pointer-events: none;
+    }
+  }
+
+  .fade-in-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+
+    &.in-view {
+      animation: slide-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
   }
 
@@ -275,6 +316,29 @@ const features = ref<Feature[]>([
         transform: translateY(0);
       }
     }
+  }
+}
+
+// Keyframe animations
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-benefits {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 </style>

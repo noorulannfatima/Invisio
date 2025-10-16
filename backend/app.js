@@ -22,7 +22,8 @@ app.use(express.urlencoded({ extended: true })); // To parse URL-encoded bodies
 // --- Routes ---
 app.use("/api/auth", authRoutes);
 
-app.get("/", (req, res) => {
+app.get("/status", (req, res) => {
+  console.log("testing")
   res.send("🚀 Server is live and ready!");
 });
 

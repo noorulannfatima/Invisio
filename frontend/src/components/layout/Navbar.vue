@@ -40,32 +40,57 @@
             Contact
           </a>
         </li>
-        <li class="mobile-only">
-          <router-link to="/dashboard" @click="closeMenu" class="dashboard-link">
-            Dashboard
-          </router-link>
-        </li>
-        <!-- Mobile Auth Links -->
-        <li class="mobile-only">
-          <router-link to="/register" @click="closeMenu" class="mobile-auth-link register">
-            Register
-          </router-link>
-        </li>
-        <li class="mobile-only">
-          <router-link to="/login" @click="closeMenu" class="mobile-auth-link login">
-            Login
-          </router-link>
-        </li>
+
+        <!-- Authenticated Mobile Links -->
+        <template v-if="authStore.isAuthenticated">
+          <li class="mobile-only">
+            <router-link to="/dashboard" @click="closeMenu" class="dashboard-link">
+              Dashboard
+            </router-link>
+          </li>
+          <li class="mobile-only">
+            <button @click="handleLogout" class="mobile-auth-link logout">
+              Logout
+            </button>
+          </li>
+        </template>
+
+        <!-- Unauthenticated Mobile Links -->
+        <template v-else>
+          <li class="mobile-only">
+            <router-link to="/register" @click="closeMenu" class="mobile-auth-link register">
+              Register
+            </router-link>
+          </li>
+          <li class="mobile-only">
+            <router-link to="/login" @click="closeMenu" class="mobile-auth-link login">
+              Login
+            </router-link>
+          </li>
+        </template>
       </ul>
 
       <!-- Right: Auth Buttons -->
       <div class="auth-buttons">
-        <router-link to="/register" class="register-btn">
-          Register
-        </router-link>
-        <router-link to="/login" class="login-btn">
-          Login
-        </router-link>
+        <!-- Authenticated User -->
+        <template v-if="authStore.isAuthenticated">
+          <router-link to="/dashboard" class="dashboard-btn">
+            Dashboard
+          </router-link>
+          <button @click="handleLogout" class="logout-btn">
+            Logout
+          </button>
+        </template>
+
+        <!-- Unauthenticated User -->
+        <template v-else>
+          <router-link to="/register" class="register-btn">
+            Register
+          </router-link>
+          <router-link to="/login" class="login-btn">
+            Login
+          </router-link>
+        </template>
       </div>
     </nav>
   </header>
@@ -74,9 +99,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/store/authStore'
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 const isOpen = ref(false)
 const activeSection = ref('home')
 
@@ -88,6 +115,17 @@ const toggleMenu = (): void => {
 // Close mobile menu
 const closeMenu = (): void => {
   isOpen.value = false
+}
+
+// Handle logout
+const handleLogout = async (): Promise<void> => {
+  try {
+    await authStore.logout()
+    closeMenu()
+    router.push('/')
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
 }
 
 // Scroll to top
@@ -352,6 +390,9 @@ onUnmounted(() => {
         padding: 0.8rem 1.5rem !important;
         border-radius: 12px;
         font-weight: 600;
+        border: none;
+        background: none;
+        cursor: pointer;
         
         &.register {
           background: transparent;
@@ -374,6 +415,17 @@ onUnmounted(() => {
             background: linear-gradient(135deg, #052f56 0%, #2563eb 100%);
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+          }
+        }
+
+        &.logout {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          color: white !important;
+          
+          &:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
           }
         }
 
@@ -450,6 +502,65 @@ onUnmounted(() => {
       &:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+
+        &::before {
+          left: 100%;
+        }
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    .dashboard-btn {
+      background: linear-gradient(135deg, #2563eb 0%, #052f56 100%);
+      border: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-decoration: none;
+      display: inline-block;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    .logout-btn {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      border: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
 
         &::before {
           left: 100%;
