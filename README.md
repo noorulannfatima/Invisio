@@ -69,12 +69,15 @@ Invisio
    │  │  │  └─ variables.scss
    │  │  └─ vue.svg
    │  ├─ components
+   │  │  ├─ Leftsidebar.vue
    │  │  └─ layout
    │  │     ├─ Contact.vue
    │  │     ├─ FAQ.vue
    │  │     ├─ Features.vue
    │  │     ├─ Footer.vue
    │  │     └─ Navbar.vue
+   │  ├─ layouts
+   │  │  └─ DashboardLayout.vue
    │  ├─ main.ts
    │  ├─ router
    │  │  └─ index.ts
@@ -83,9 +86,13 @@ Invisio
    │  ├─ style.css
    │  ├─ views
    │  │  ├─ Dashboard.vue
+   │  │  ├─ Finance.vue
    │  │  ├─ Home.vue
+   │  │  ├─ Inventory.vue
    │  │  ├─ Login.vue
-   │  │  └─ Register.vue
+   │  │  ├─ Register.vue
+   │  │  ├─ Reports.vue
+   │  │  └─ Settings.vue
    │  └─ vite-env.d.ts
    ├─ tsconfig.app.json
    ├─ tsconfig.json

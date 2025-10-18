@@ -1,10 +1,15 @@
+//app.js
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const { sequelize } = require("./models");
-
+// routes
 const authRoutes = require("./routes/authRoutes"); 
+const companyRoutes = require('./routes/companyRoutes');
+const partyRoutes = require("./routes/partyRoutes")
+const itemRoutes = require('./routes/itemRoutes');
+
 
 dotenv.config();
 
@@ -21,6 +26,11 @@ app.use(express.urlencoded({ extended: true })); // To parse URL-encoded bodies
 
 // --- Routes ---
 app.use("/api/auth", authRoutes);
+app.use('/api/company', companyRoutes);
+app.use('/api/party', partyRoutes)
+app.use('/api/item', itemRoutes)
+
+
 
 app.get("/status", (req, res) => {
   console.log("testing")

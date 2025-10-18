@@ -9,7 +9,7 @@ module.exports = (sequelize) => {
       autoIncrement: true,
       allowNull: false
     },
-    // Foreign Key to the User table
+    // Foreign Key to the User table//
     User_ID: {
       type: DataTypes.INTEGER,
       allowNull: false,

@@ -1,3 +1,4 @@
+// middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 // Load the User model from the central models index
 const { User } = require('../models'); 
