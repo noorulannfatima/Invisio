@@ -8,7 +8,7 @@
 </template>
 
 <script lang="ts" setup>
-import LeftSidebar from '@/components/LeftSidebar.vue'
+import LeftSidebar from '@/components/Leftsidebar.vue'
 </script>
 
 <style lang="scss" scoped>

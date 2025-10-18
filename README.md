@@ -10,7 +10,14 @@ Invisio
 │  │  ├─ config.js
 │  │  └─ config.json
 │  ├─ controllers
-│  │  └─ authController.js
+│  │  ├─ authController.js
+│  │  ├─ companyController.js
+│  │  ├─ expenseController.js
+│  │  ├─ itemController.js
+│  │  ├─ partyController.js
+│  │  ├─ reportController.js
+│  │  ├─ settingsController.js
+│  │  └─ transactionController.js
 │  ├─ middleware
 │  │  └─ authMiddleware.js
 │  ├─ migrations
@@ -35,7 +42,14 @@ Invisio
 │  ├─ package-lock.json
 │  ├─ package.json
 │  ├─ routes
-│  │  └─ authRoutes.js
+│  │  ├─ authRoutes.js
+│  │  ├─ companyRoutes.js
+│  │  ├─ expenseRoutes.js
+│  │  ├─ itemRoutes.js
+│  │  ├─ partyRoutes.js
+│  │  ├─ reportRoutes.js
+│  │  ├─ settingsRoutes.js
+│  │  └─ transactionRoutes.js
 │  └─ seeders
 │     ├─ 20251009165709-demo-users.js
 │     ├─ 20251010162203-demo-companies.js
