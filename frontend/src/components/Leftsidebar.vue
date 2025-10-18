@@ -48,7 +48,7 @@ const menuItems: MenuItem[] = [
   { label: 'Reports', path: '/reports', icon: 'fas fa-chart-line' },
   { label: 'Settings', path: '/settings', icon: 'fas fa-cog' },
 ]
-
+ 
 </script>
 
 <style lang="scss" scoped>

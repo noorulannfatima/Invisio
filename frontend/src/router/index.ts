@@ -21,7 +21,6 @@ const routes = [
     meta: { requiresGuest: true, layout: 'auth' },
   },
   {
-    // 🔹 All dashboard routes go under the layout
     path: '/dashboard',
     component: () => import('@/layouts/DashboardLayout.vue'),
     meta: { requiresAuth: true },
@@ -32,25 +31,21 @@ const routes = [
         component: () => import('@/views/Dashboard.vue'),
       },
       {
-  path: '/finance',
-  name: 'Finance',
-  component: () => import('@/views/Finance.vue'),
-  meta: { requiresAuth: true }
-},
-{
-  path: '/reports',
-  name: 'Reports',
-  component: () => import('@/views/Reports.vue'),
-  meta: { requiresAuth: true }
-},
-{
-  path: '/inventory',
-  name: 'Inventory',
-  component: () => import('@/views/Inventory.vue'),
-  meta: { requiresAuth: true }
-},
-
-            {
+        path: '/finance',
+        name: 'Finance',
+        component: () => import('@/views/Finance.vue'),
+      },
+      {
+        path: '/reports',
+        name: 'Reports',
+        component: () => import('@/views/Reports.vue'),
+      },
+      {
+        path: '/inventory',
+        name: 'Inventory',
+        component: () => import('@/views/Inventory.vue'),
+      },
+      {
         path: '/settings',
         name: 'Settings',
         component: () => import('@/views/Settings.vue'),
@@ -67,24 +62,32 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth',
+      }
+    } else {
+      return { top: 0, behavior: 'smooth' }
+    }
+  },
 })
 
-// ✅ Navigation Guard
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // Initialize auth state
   if (!authStore.isInitialized) {
     await authStore.initializeAuth()
   }
 
-  // Redirect authenticated users away from guest pages
   if (to.meta.requiresGuest && authStore.isAuthenticated) {
     next({ name: 'Dashboard' })
     return
   }
 
-  // Redirect unauthenticated users to login
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'Login' })
     return

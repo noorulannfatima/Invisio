@@ -2,8 +2,10 @@
   <header class="navbar">
     <nav class="navbar-container">
       <!-- Left: Logo -->
-      <div class="logo" @click="scrollToTop">
-        <router-link to="/" class="logo-link">Invisio</router-link>
+      <div class="logo">
+        <router-link to="/" class="logo-link" @click="closeMenu">
+          Invisio
+        </router-link>
       </div>
 
       <!-- Hamburger (Mobile only) -->
@@ -21,22 +23,22 @@
       <!-- Center: Links -->
       <ul class="nav-links" :class="{ open: isOpen }">
         <li>
-          <a href="#home" @click="scrollToSection('home')" :class="{ active: activeSection === 'home' }">
+          <a href="#home" @click.prevent="scrollToSection('home')" :class="{ active: activeSection === 'home' }">
             Home
           </a>
         </li>
         <li>
-          <a href="#features" @click="scrollToSection('features')" :class="{ active: activeSection === 'features' }">
+          <a href="#features" @click.prevent="scrollToSection('features')" :class="{ active: activeSection === 'features' }">
             Features
           </a>
         </li>
         <li>
-          <a href="#faq" @click="scrollToSection('faq')" :class="{ active: activeSection === 'faq' }">
+          <a href="#faq" @click.prevent="scrollToSection('faq')" :class="{ active: activeSection === 'faq' }">
             FAQs
           </a>
         </li>
         <li>
-          <a href="#contact" @click="scrollToSection('contact')" :class="{ active: activeSection === 'contact' }">
+          <a href="#contact" @click.prevent="scrollToSection('contact')" :class="{ active: activeSection === 'contact' }">
             Contact
           </a>
         </li>
@@ -97,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/authStore'
 
@@ -107,17 +109,14 @@ const authStore = useAuthStore()
 const isOpen = ref(false)
 const activeSection = ref('home')
 
-// Toggle mobile menu
 const toggleMenu = (): void => {
   isOpen.value = !isOpen.value
 }
 
-// Close mobile menu
 const closeMenu = (): void => {
   isOpen.value = false
 }
 
-// Handle logout
 const handleLogout = async (): Promise<void> => {
   try {
     await authStore.logout()
@@ -128,95 +127,89 @@ const handleLogout = async (): Promise<void> => {
   }
 }
 
-// Scroll to top
-const scrollToTop = (): void => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-  closeMenu()
-}
-
-// Smooth scroll to section
 const scrollToSection = (sectionId: string): void => {
   closeMenu()
   
-  // If not on home page, navigate to home first
   if (route.path !== '/') {
+    // Navigate to home first, then scroll
     router.push('/').then(() => {
+      // Wait for DOM to be fully rendered and Vue to update
       setTimeout(() => {
         scrollToElement(sectionId)
-      }, 100)
+      }, 300)
     })
   } else {
     scrollToElement(sectionId)
   }
 }
 
-// Helper function to scroll to element
 const scrollToElement = (sectionId: string): void => {
-  let targetElement: HTMLElement | null = null
+  // Find element by ID
+  const element = document.getElementById(sectionId)
   
-  switch (sectionId) {
-    case 'home':
-      targetElement = document.querySelector('.hero') as HTMLElement
-      break
-    case 'features':
-      targetElement = document.querySelector('.features-section') as HTMLElement
-      break
-    case 'faq':
-      targetElement = document.querySelector('.faq-section') as HTMLElement
-      break
-    case 'contact':
-      targetElement = document.querySelector('.contact-section') as HTMLElement
-      break
-  }
-
-  if (targetElement) {
-    const offsetTop = targetElement.offsetTop - 80 // Account for fixed navbar
+  if (element) {
+    const offsetTop = element.offsetTop - 80
     window.scrollTo({
       top: offsetTop,
       behavior: 'smooth'
     })
+    // Update active section immediately
+    activeSection.value = sectionId
   }
 }
 
-// Update active section based on scroll position
 const updateActiveSection = (): void => {
-  if (route.path !== '/') return
+  if (route.path !== '/') {
+    activeSection.value = ''
+    return
+  }
 
-  const sections = [
-    { id: 'home', element: document.querySelector('.hero') as HTMLElement },
-    { id: 'features', element: document.querySelector('.features-section') as HTMLElement },
-    { id: 'faq', element: document.querySelector('.faq-section') as HTMLElement },
-    { id: 'contact', element: document.querySelector('.contact-section') as HTMLElement }
-  ]
-
-  const scrollPosition = window.scrollY + 150 // Offset for navbar
+  const sections = ['home', 'features', 'faq', 'contact']
+  const scrollPosition = window.scrollY + 150
 
   for (let i = sections.length - 1; i >= 0; i--) {
-    const section = sections[i]
-    if (section.element && scrollPosition >= section.element.offsetTop) {
-      activeSection.value = section.id
-      break
+    const element = document.getElementById(sections[i])
+    if (element && scrollPosition >= element.offsetTop) {
+      activeSection.value = sections[i]
+      return
     }
   }
+  
+  // Default to home if at the top
+  activeSection.value = 'home'
 }
 
-// Handle scroll events
 const handleScroll = (): void => {
   updateActiveSection()
 }
 
-// Close menu when clicking outside
 const handleClickOutside = (event: Event): void => {
   const navbar = document.querySelector('.navbar')
-  if (navbar && !navbar.contains(event.target as Node)) {
+  if (navbar && !navbar.contains(event.target as Node) && isOpen.value) {
     closeMenu()
   }
 }
 
+watch(() => route.path, () => {
+  closeMenu()
+  if (route.path === '/') {
+    // Small delay to ensure DOM is ready
+    setTimeout(() => {
+      updateActiveSection()
+    }, 100)
+  } else {
+    activeSection.value = ''
+  }
+})
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   document.addEventListener('click', handleClickOutside)
-  updateActiveSection() // Set initial active section
+  
+  // Initial update with delay to ensure DOM is ready
+  setTimeout(() => {
+    updateActiveSection()
+  }, 100)
 })
 
 onUnmounted(() => {
@@ -263,7 +256,6 @@ onUnmounted(() => {
     }
   }
 
-  /* Logo */
   .logo {
     cursor: pointer;
     
@@ -287,7 +279,6 @@ onUnmounted(() => {
     }
   }
 
-  /* Nav Links */
   .nav-links {
     display: flex;
     gap: 2.5rem;
@@ -334,6 +325,7 @@ onUnmounted(() => {
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         position: relative;
         display: block;
+        cursor: pointer;
 
         &::before {
           content: '';
@@ -368,31 +360,33 @@ onUnmounted(() => {
         }
       }
 
-      .dashboard-link {
-        background: linear-gradient(135deg, #2563eb 0%, #052f56 100%);
-        color: white !important;
+      .dashboard-link, .mobile-auth-link {
         border-radius: 12px;
         padding: 0.8rem 1.5rem !important;
         font-weight: 600;
+        font-size: 1rem;
+        
+        &::before {
+          display: none;
+        }
+      }
+
+      .dashboard-link {
+        background: linear-gradient(135deg, #2563eb 0%, #052f56 100%);
+        color: white !important;
         
         &:hover {
           background: linear-gradient(135deg, #052f56 0%, #2563eb 100%);
           transform: translateY(-2px);
           box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
         }
-
-        &::before {
-          display: none;
-        }
       }
 
       .mobile-auth-link {
-        padding: 0.8rem 1.5rem !important;
-        border-radius: 12px;
-        font-weight: 600;
         border: none;
         background: none;
         cursor: pointer;
+        width: 100%;
         
         &.register {
           background: transparent;
@@ -428,10 +422,6 @@ onUnmounted(() => {
             box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
           }
         }
-
-        &::before {
-          display: none;
-        }
       }
 
       &.mobile-only {
@@ -439,12 +429,13 @@ onUnmounted(() => {
         
         @media (max-width: 768px) {
           display: block;
+          width: 80%;
+          margin: 0 auto;
         }
       }
     }
   }
 
-  /* Auth Buttons */
   .auth-buttons {
     display: flex;
     align-items: center;
@@ -454,17 +445,22 @@ onUnmounted(() => {
       display: none;
     }
 
-    .register-btn {
-      background: transparent;
-      border: 2px solid #2563eb;
+    .register-btn, .login-btn, .dashboard-btn, .logout-btn {
       padding: 0.6rem 1.5rem;
       border-radius: 12px;
-      color: #2563eb;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-decoration: none;
       display: inline-block;
+      border: none;
+      font-size: 1rem;
+    }
+
+    .register-btn {
+      background: transparent;
+      border: 2px solid #2563eb;
+      color: #2563eb;
 
       &:hover {
         background: #2563eb;
@@ -474,19 +470,11 @@ onUnmounted(() => {
       }
     }
 
-    .login-btn {
+    .login-btn, .dashboard-btn {
       background: linear-gradient(135deg, #2563eb 0%, #052f56 100%);
-      border: none;
-      padding: 0.6rem 1.5rem;
-      border-radius: 12px;
       color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       position: relative;
       overflow: hidden;
-      text-decoration: none;
-      display: inline-block;
 
       &::before {
         content: '';
@@ -513,37 +501,9 @@ onUnmounted(() => {
       }
     }
 
-    .dashboard-btn {
-      background: linear-gradient(135deg, #2563eb 0%, #052f56 100%);
-      border: none;
-      padding: 0.6rem 1.5rem;
-      border-radius: 12px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      text-decoration: none;
-      display: inline-block;
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-    }
-
     .logout-btn {
       background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      border: none;
-      padding: 0.6rem 1.5rem;
-      border-radius: 12px;
       color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       position: relative;
       overflow: hidden;
 
@@ -573,7 +533,6 @@ onUnmounted(() => {
     }
   }
 
-  /* Hamburger Menu */
   .hamburger {
     display: none;
     flex-direction: column;
@@ -620,12 +579,10 @@ onUnmounted(() => {
   }
 }
 
-// Add padding to body to account for fixed navbar
 :global(body) {
   padding-top: 80px;
 }
 
-// Smooth scroll behavior
 :global(html) {
   scroll-behavior: smooth;
 }
