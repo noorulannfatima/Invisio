@@ -9,6 +9,8 @@ const authRoutes = require("./routes/authRoutes");
 const companyRoutes = require('./routes/companyRoutes');
 const partyRoutes = require("./routes/partyRoutes")
 const itemRoutes = require('./routes/itemRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
 
 
 dotenv.config();
@@ -29,6 +31,8 @@ app.use("/api/auth", authRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/party', partyRoutes)
 app.use('/api/item', itemRoutes)
+app.use('/api/transaction', transactionRoutes);
+app.use('/api/expense', expenseRoutes);
 
 
 
