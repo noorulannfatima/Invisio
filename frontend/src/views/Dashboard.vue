@@ -48,7 +48,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Items</span>
-              <span class="stat-value">0</span>
+              <span class="stat-value">{{ itemStore.itemCount }}</span>
             </div>
           </div>
         </div>
@@ -91,21 +91,21 @@
             <div class="card-body">
               <div class="finance-item">
                 <span class="label">Total Revenue</span>
-                <span class="value">$0.00</span>
+                <span class="value">${{ formatCurrency(0) }}</span>
               </div>
               <div class="finance-item">
                 <span class="label">Total Expenses</span>
-                <span class="value">$0.00</span>
+                <span class="value">${{ formatCurrency(0) }}</span>
               </div>
               <div class="finance-item">
                 <span class="label">Net Profit</span>
-                <span class="value positive">$0.00</span>
+                <span class="value positive">${{ formatCurrency(0) }}</span>
               </div>
               <div class="finance-item">
-                <span class="label">Pending Transactions</span>
-                <span class="value">0</span>
+                <span class="label">Inventory Value</span>
+                <span class="value highlight">${{ formatCurrency(itemStore.totalInventoryValue) }}</span>
               </div>
-              <router-link to="/finance" class="view-link">
+              <router-link to="/inventory" class="view-link">
                 View Details <i class="fas fa-arrow-right"></i>
               </router-link>
             </div>
@@ -140,7 +140,7 @@
               </div>
               <div class="overview-item">
                 <span class="label">Email</span>
-                <span class="value">{{ companyStore.company?.Email || 'Not provided' }}</span>
+                <span class="value email-value">{{ companyStore.company?.Email || 'Not provided' }}</span>
               </div>
               <div class="overview-item">
                 <span class="label">Created</span>
@@ -201,11 +201,13 @@ import { ref, onMounted, watch } from 'vue';
 import Chart from 'chart.js/auto';
 import { useCompanyStore } from '@/store/companyStore';
 import { useAuthStore } from '@/store/authStore';
+import { useItemStore } from '@/store/itemStore';
 import CreateCompanyModal from '@/components/CreateCompanyModal.vue';
 import EditCompanyModal from '@/components/EditCompanyModal.vue';
 
 const authStore = useAuthStore();
 const companyStore = useCompanyStore();
+const itemStore = useItemStore();
 
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
@@ -218,19 +220,17 @@ let revenueChart: Chart | null = null;
 let expenseChart: Chart | null = null;
 
 onMounted(async () => {
-  // Fetch company data on component mount
   try {
     await companyStore.fetchMyCompany();
-    // Initialize charts after a small delay to ensure DOM is ready
+    await loadInventoryData();
     setTimeout(() => {
       initializeCharts();
     }, 100);
   } catch (err) {
-    console.error('Failed to fetch company:', err);
+    console.error('Failed to fetch data:', err);
   }
 });
 
-// Watch for company data changes and reinitialize charts
 watch(
   () => companyStore.company,
   () => {
@@ -239,6 +239,21 @@ watch(
     }
   }
 );
+
+watch(
+  () => itemStore.totalInventoryValue,
+  () => {
+    updateCharts();
+  }
+);
+
+const loadInventoryData = async () => {
+  try {
+    await itemStore.fetchInventoryValuation(10);
+  } catch (err) {
+    console.error('Failed to load inventory data:', err);
+  }
+};
 
 const initializeCharts = () => {
   initRevenueChart();
@@ -251,7 +266,6 @@ const initRevenueChart = () => {
   const ctx = revenueChartRef.value.getContext('2d');
   if (!ctx) return;
 
-  // Destroy existing chart if it exists
   if (revenueChart) {
     revenueChart.destroy();
   }
@@ -320,7 +334,6 @@ const initExpenseChart = () => {
   const ctx = expenseChartRef.value.getContext('2d');
   if (!ctx) return;
 
-  // Destroy existing chart if it exists
   if (expenseChart) {
     expenseChart.destroy();
   }
@@ -369,8 +382,7 @@ const initExpenseChart = () => {
 };
 
 const updateCharts = () => {
-  // Update charts with new data if needed
-  // For now, they display placeholder data
+  // Charts update automatically through reactivity
 };
 
 const openCreateCompanyModal = () => {
@@ -393,8 +405,9 @@ const refreshCompanyData = async () => {
   isRefreshing.value = true;
   try {
     await companyStore.fetchMyCompany();
+    await loadInventoryData();
   } catch (err) {
-    console.error('Failed to refresh company data:', err);
+    console.error('Failed to refresh data:', err);
   } finally {
     isRefreshing.value = false;
   }
@@ -407,6 +420,10 @@ const formatDate = (dateString?: string): string => {
     month: 'short',
     day: 'numeric',
   });
+};
+
+const formatCurrency = (value: number): string => {
+  return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
 const getInitials = (name?: string): string => {
@@ -428,13 +445,14 @@ const getInitials = (name?: string): string => {
   padding: 2rem;
   background-color: #f8f9fb;
   min-height: calc(100vh - 70px);
+}
 
-  .dashboard-title {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #222;
-    margin-bottom: 1.5rem;
-  }
+// Header
+.dashboard-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 1.5rem 0;
 }
 
 // Action Bar
@@ -490,7 +508,7 @@ const getInitials = (name?: string): string => {
 // Quick Stats Row
 .quick-stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1.5rem;
   margin-bottom: 3rem;
 
@@ -544,6 +562,7 @@ const getInitials = (name?: string): string => {
     .stat-info {
       display: flex;
       flex-direction: column;
+      min-width: 0;
 
       .stat-label {
         color: #718096;
@@ -648,6 +667,7 @@ const getInitials = (name?: string): string => {
     align-items: center;
     padding: 1rem 0;
     border-bottom: 1px solid #f0f4f8;
+    gap: 1rem;
 
     &:last-of-type {
       border-bottom: none;
@@ -657,15 +677,23 @@ const getInitials = (name?: string): string => {
       color: #718096;
       font-weight: 500;
       font-size: 0.95rem;
+      flex-shrink: 0;
     }
 
     .value {
       color: #2d3748;
       font-weight: 700;
       font-size: 1.1rem;
+      text-align: right;
+      word-break: break-word;
 
       &.positive {
         color: #38a169;
+      }
+
+      &.highlight {
+        color: #667eea;
+        font-size: 1.2rem;
       }
     }
   }
@@ -695,9 +723,10 @@ const getInitials = (name?: string): string => {
   .overview-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 1rem 0;
     border-bottom: 1px solid #f0f4f8;
+    gap: 1rem;
 
     &:last-child {
       border-bottom: none;
@@ -707,16 +736,18 @@ const getInitials = (name?: string): string => {
       color: #718096;
       font-weight: 500;
       font-size: 0.95rem;
+      flex-shrink: 0;
     }
 
     .value {
       color: #2d3748;
       font-weight: 600;
       text-align: right;
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      word-break: break-word;
+
+      &.email-value {
+        color: #667eea;
+      }
     }
   }
 }
@@ -745,18 +776,21 @@ const getInitials = (name?: string): string => {
 
   .owner-details {
     flex: 1;
+    min-width: 0;
 
     h4 {
       margin: 0 0 0.5rem 0;
       color: #2d3748;
       font-size: 1.05rem;
       font-weight: 600;
+      word-break: break-word;
     }
 
     p {
       margin: 0.25rem 0;
       color: #718096;
       font-size: 0.9rem;
+      word-break: break-word;
 
       &.email {
         color: #667eea;
@@ -879,6 +913,10 @@ const getInitials = (name?: string): string => {
   .right-section {
     order: -1;
   }
+
+  .dashboard {
+    padding: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -886,11 +924,10 @@ const getInitials = (name?: string): string => {
     margin-left: 0;
     margin-top: 60px;
     padding: 1.5rem;
+  }
 
-    .dashboard-title {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
+  .dashboard-title {
+    font-size: 1.5rem;
   }
 
   .quick-stats-row {
@@ -907,8 +944,14 @@ const getInitials = (name?: string): string => {
         font-size: 1rem;
       }
 
-      .stat-info .stat-value {
-        font-size: 1.2rem;
+      .stat-info {
+        .stat-label {
+          font-size: 0.75rem;
+        }
+
+        .stat-value {
+          font-size: 1.2rem;
+        }
       }
     }
   }
@@ -922,15 +965,53 @@ const getInitials = (name?: string): string => {
   .action-bar {
     flex-wrap: wrap;
   }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .card-header {
+    padding: 1rem;
+    flex-wrap: wrap;
+
+    h3 {
+      font-size: 1rem;
+    }
+  }
+
+  .finance-card .finance-item,
+  .company-card .overview-item {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .label {
+      width: 100%;
+    }
+
+    .value {
+      width: 100%;
+      text-align: left;
+    }
+  }
+
+  .owner-info {
+    flex-wrap: wrap;
+  }
+
+  .chart-body {
+    min-height: 250px;
+  }
 }
 
 @media (max-width: 480px) {
   .dashboard {
     padding: 1rem;
+    margin-top: 50px;
+  }
 
-    .dashboard-title {
-      font-size: 1.3rem;
-    }
+  .dashboard-title {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
   }
 
   .quick-stats-row {
@@ -944,12 +1025,30 @@ const getInitials = (name?: string): string => {
     }
   }
 
-  .card-body {
-    padding: 1rem;
+  .card-header {
+    padding: 1rem 0.75rem;
   }
 
-  .card-header {
-    padding: 1rem;
+  .card-body {
+    padding: 1rem 0.75rem;
+  }
+
+  .finance-card .finance-item,
+  .company-card .overview-item {
+    padding: 0.75rem 0;
+  }
+
+  .btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .error-banner {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

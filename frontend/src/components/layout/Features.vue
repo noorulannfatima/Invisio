@@ -1,3 +1,4 @@
+<!-- Features.vue -->
 <template>
   <section class="features">
     <div class="container">
@@ -13,12 +14,14 @@
           class="feature-card"
           :style="{ animationDelay: `${index * 0.1}s` }"
         >
-          <div class="feature-icon">{{ feature.icon }}</div>
+          <div class="feature-icon">
+            <i :class="feature.icon"></i>
+          </div>
           <h3>{{ feature.title }}</h3>
           <p>{{ feature.description }}</p>
           <ul class="feature-benefits">
             <li v-for="benefit in feature.benefits" :key="benefit">
-              ✓ {{ benefit }}
+              {{ benefit }}
             </li>
           </ul>
         </div>
@@ -26,7 +29,7 @@
 
       <div class="features-cta fade-in-scroll" style="animation-delay: 0.3s">
         <h3>Ready to transform your business?</h3>
-        <p>Join thousands of businesses already using our platform</p>
+        <p>Join thousands of businesses already using Invisio</p>
         <button class="cta-button">Start Free Trial</button>
       </div>
     </div>
@@ -37,17 +40,17 @@
 import { ref, onMounted } from 'vue'
 
 interface Feature {
-  id: number
-  icon: string
-  title: string
-  description: string
-  benefits: string[]
+  id: number;
+  icon: string;
+  title: string;
+  description: string;
+  benefits: string[];
 }
 
 const features = ref<Feature[]>([
   {
     id: 1,
-    icon: '🧾',
+    icon: 'fas fa-file-invoice-dollar',
     title: 'GST Invoicing',
     description: 'Create professional GST compliant invoices in seconds',
     benefits: [
@@ -59,7 +62,7 @@ const features = ref<Feature[]>([
   },
   {
     id: 2,
-    icon: '📊',
+    icon: 'fas fa-chart-bar',
     title: 'Business Reports',
     description: 'Comprehensive reports to track your business performance',
     benefits: [
@@ -71,7 +74,7 @@ const features = ref<Feature[]>([
   },
   {
     id: 3,
-    icon: '📦',
+    icon: 'fas fa-boxes',
     title: 'Inventory Management',
     description: 'Keep track of your stock levels and never run out',
     benefits: [
@@ -83,7 +86,7 @@ const features = ref<Feature[]>([
   },
   {
     id: 4,
-    icon: '💰',
+    icon: 'fas fa-money-bill-wave',
     title: 'Payment Tracking',
     description: 'Monitor all payments and outstanding amounts',
     benefits: [
@@ -95,7 +98,7 @@ const features = ref<Feature[]>([
   },
   {
     id: 5,
-    icon: '👥',
+    icon: 'fas fa-users',
     title: 'Customer Management',
     description: 'Maintain detailed customer profiles and history',
     benefits: [
@@ -107,7 +110,7 @@ const features = ref<Feature[]>([
   },
   {
     id: 6,
-    icon: '📱',
+    icon: 'fas fa-mobile-alt',
     title: 'Mobile Access',
     description: 'Access your business data anywhere, anytime',
     benefits: [
@@ -140,13 +143,16 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .features {
-  padding: 5rem 0;
+  padding: 5rem 2rem;
   background: #fff;
+
+  @media (max-width: 768px) {
+    padding: 3rem 1rem;
+  }
 
   .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem;
   }
 
   .features-header {
@@ -158,6 +164,14 @@ onMounted(() => {
       font-weight: 700;
       color: #2d3748;
       margin-bottom: 1rem;
+
+      @media (max-width: 768px) {
+        font-size: 1.8rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 1.4rem;
+      }
     }
 
     p {
@@ -165,51 +179,87 @@ onMounted(() => {
       color: #718096;
       max-width: 600px;
       margin: 0 auto;
+
+      @media (max-width: 768px) {
+        font-size: 1rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 0.9rem;
+      }
     }
   }
 
   .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     margin-bottom: 4rem;
 
     @media (max-width: 768px) {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
     }
   }
 
   .feature-card {
-    background: #f8fafc;
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
     padding: 2rem;
     border-radius: 16px;
     border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     opacity: 0;
     transform: translateY(30px);
+
+    @media (max-width: 480px) {
+      padding: 1.5rem;
+    }
 
     &.in-view {
       animation: slide-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
     &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-      border-color: #3182ce;
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+      border-color: #667eea;
 
       .feature-icon {
-        transform: scale(1.1) rotateZ(5deg);
+        transform: scale(1.15) rotateZ(5deg);
+        color: #667eea;
       }
     }
 
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
     .feature-icon {
-      font-size: 3rem;
+      font-size: 2.5rem;
       margin-bottom: 1rem;
-      display: block;
-      transition: transform 0.3s ease;
+      color: #667eea;
+      transition: all 0.3s ease;
+
+      @media (max-width: 480px) {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+      }
     }
 
     h3 {
@@ -217,12 +267,23 @@ onMounted(() => {
       font-weight: 600;
       color: #2d3748;
       margin-bottom: 0.8rem;
+
+      @media (max-width: 480px) {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+      }
     }
 
     p {
       color: #718096;
       margin-bottom: 1.5rem;
       line-height: 1.6;
+      font-size: 0.95rem;
+
+      @media (max-width: 480px) {
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+      }
     }
 
     .feature-benefits {
@@ -239,30 +300,35 @@ onMounted(() => {
         opacity: 0;
         animation: fade-in-benefits 0.5s ease-out forwards;
 
-        &:nth-child(1) { animation-delay: 0.1s; }
-        &:nth-child(2) { animation-delay: 0.2s; }
-        &:nth-child(3) { animation-delay: 0.3s; }
-        &:nth-child(4) { animation-delay: 0.4s; }
+        &:nth-child(1) {
+          animation-delay: 0.1s;
+        }
+
+        &:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+
+        &:nth-child(3) {
+          animation-delay: 0.3s;
+        }
+
+        &:nth-child(4) {
+          animation-delay: 0.4s;
+        }
 
         &::before {
           content: '✓';
           color: #38a169;
           font-weight: bold;
-          margin-right: 0.5rem;
+          margin-right: 0.75rem;
+          font-size: 1.1rem;
+        }
+
+        @media (max-width: 480px) {
+          font-size: 0.85rem;
+          margin-bottom: 0.4rem;
         }
       }
-    }
-
-    // Add subtle background pattern
-    &::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle, rgba(49, 130, 206, 0.03) 0%, transparent 70%);
-      pointer-events: none;
     }
   }
 
@@ -282,49 +348,80 @@ onMounted(() => {
     border-radius: 16px;
     color: #fff;
 
+    @media (max-width: 768px) {
+      padding: 2rem 1.5rem;
+    }
+
+    @media (max-width: 480px) {
+      padding: 1.5rem 1rem;
+    }
+
     h3 {
       font-size: 2rem;
       font-weight: 600;
       margin-bottom: 0.5rem;
+
+      @media (max-width: 768px) {
+        font-size: 1.5rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 1.2rem;
+      }
     }
 
     p {
       font-size: 1.1rem;
       margin-bottom: 2rem;
-      opacity: 0.9;
+      opacity: 0.95;
+
+      @media (max-width: 768px) {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
     }
 
     .cta-button {
       background: #fff;
       color: #667eea;
-      padding: 1rem 2rem;
+      padding: 1rem 2.5rem;
       border: none;
       border-radius: 50px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+
+      @media (max-width: 480px) {
+        padding: 0.8rem 2rem;
+        font-size: 0.9rem;
+      }
 
       &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
         background: #f8fafc;
       }
 
       &:active {
-        transform: translateY(0);
+        transform: translateY(-1px);
       }
     }
   }
 }
 
-// Keyframe animations
 @keyframes slide-up {
   from {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -336,9 +433,11 @@ onMounted(() => {
     opacity: 0;
     transform: translateX(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
   }
 }
 </style>
+

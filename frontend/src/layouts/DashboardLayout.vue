@@ -1,3 +1,4 @@
+<!-- DashboardLayout.vue -->
 <template>
   <div class="dashboard-layout">
     <LeftSidebar />
@@ -20,6 +21,13 @@ import LeftSidebar from '@/components/Leftsidebar.vue'
 
 .main-content {
   flex: 1;
-  padding: 2rem;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
 }
 </style>
