@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import { watch } from 'vue'
 import { useRoute } from 'vue-router'
-import Navbar from '@/components/layout/Navbar.vue'
+import Navbar from '@/components/Common/Navbar.vue'
 
 const route = useRoute()
 

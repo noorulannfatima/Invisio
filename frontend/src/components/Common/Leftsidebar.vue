@@ -90,7 +90,7 @@ const menuItems: MenuItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: 'fas fa-home' },
   { label: 'Inventory', path: '/inventory', icon: 'fas fa-box' },
   { label: 'Parties', path: '/parties', icon: 'fas fa-users' },
-  { label: 'Expenses', path: '/expenses', icon: 'fas fa-receipt' },
+  { label: 'Expense', path: '/expense', icon: 'fas fa-receipt' },
   { label: 'Finance', path: '/finance', icon: 'fas fa-dollar-sign' },
   { label: 'Reports', path: '/reports', icon: 'fas fa-chart-line' },
   { label: 'Settings', path: '/settings', icon: 'fas fa-cog' },

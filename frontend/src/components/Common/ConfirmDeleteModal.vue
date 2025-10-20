@@ -1,4 +1,4 @@
-<!-- ConfirmDeleteModal.vue -->
+<!-- /components/ConfirmDeleteModal.vue -->
 <template>
   <div class="modal-overlay" @click.self="cancelDelete">
     <div class="modal-content">

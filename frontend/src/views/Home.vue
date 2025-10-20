@@ -47,10 +47,10 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/authStore'
-import Contact from '@/components/layout/Contact.vue'
-import Features from '@/components/layout/Features.vue'
-import Footer from '@/components/layout/Footer.vue'
-import FAQ from '@/components/layout/FAQ.vue'
+import Contact from '@/components/Home/Contact.vue'
+import Features from '@/components/Home/Features.vue'
+import Footer from '@/components/Home/Footer.vue'
+import FAQ from '@/components/Home/FAQ.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

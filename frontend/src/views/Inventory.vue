@@ -215,11 +215,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useItemStore } from '@/store/itemStore';
-import ItemDetailsModal from '@/components/ItemDetailsModal.vue';
-import CreateItemModal from '@/components/CreateItemModal.vue';
-import EditItemModal from '@/components/EditItemModal.vue';
-import AdjustStockModal from '@/components/AdjustStockModal.vue';
-import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue';
+import ItemDetailsModal from '@/components/Inventory/ItemDetailsModal.vue';
+import CreateItemModal from '@/components/Inventory/CreateItemModal.vue';
+import EditItemModal from '@/components/Inventory/EditItemModal.vue';
+import AdjustStockModal from '@/components/Inventory/AdjustStockModal.vue';
+import ConfirmDeleteModal from '@/components/Common/ConfirmDeleteModal.vue';
 import type { Item } from '@/store/itemStore';
 
 const itemStore = useItemStore();

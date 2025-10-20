@@ -1,0 +1,191 @@
+<!-- DashboardFinanceCard.vue--> 
+<template>
+  <div class="card finance-card">
+    <div class="card-header">
+      <h3>Finance Overview</h3>
+      <button class="btn-icon" @click="$emit('refresh')" :disabled="isRefreshing">
+        <i class="fas fa-sync"></i>
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="finance-item">
+        <span class="label">Total Revenue</span>
+        <span class="value">${{ formatCurrency(0) }}</span>
+      </div>
+      <div class="finance-item">
+        <span class="label">Total Expenses</span>
+        <span class="value">${{ formatCurrency(0) }}</span>
+      </div>
+      <div class="finance-item">
+        <span class="label">Net Profit</span>
+        <span class="value positive">${{ formatCurrency(0) }}</span>
+      </div>
+      <div class="finance-item">
+        <span class="label">Inventory Value</span>
+        <span class="value highlight">${{ formatCurrency(itemStore.totalInventoryValue) }}</span>
+      </div>
+      <router-link to="/inventory" class="view-link">
+        View Details <i class="fas fa-arrow-right"></i>
+      </router-link>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useItemStore } from '@/store/itemStore';
+
+interface Props {
+  isRefreshing: boolean;
+}
+
+defineProps<Props>();
+
+defineEmits<{
+  refresh: [];
+}>();
+
+const itemStore = useItemStore();
+
+const formatCurrency = (value: number): string => {
+  return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+</script>
+
+<style scoped lang="scss">
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+
+  h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #2d3748;
+    font-weight: 600;
+  }
+
+  .btn-icon {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #718096;
+    transition: color 0.3s ease, transform 0.3s ease;
+
+    &:hover:not(:disabled) {
+      color: #667eea;
+      transform: rotate(180deg);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.finance-card {
+  .finance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f4f8;
+    gap: 1rem;
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+
+    .label {
+      color: #718096;
+      font-weight: 500;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .value {
+      color: #2d3748;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-align: right;
+      word-break: break-word;
+
+      &.positive {
+        color: #38a169;
+      }
+
+      &.highlight {
+        color: #667eea;
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .view-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: #764ba2;
+    }
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .card-header {
+    padding: 1rem;
+
+    h3 {
+      font-size: 1rem;
+    }
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .finance-card .finance-item {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .label {
+      width: 100%;
+    }
+
+    .value {
+      width: 100%;
+      text-align: left;
+    }
+  }
+}
+</style>

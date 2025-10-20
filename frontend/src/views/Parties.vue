@@ -192,10 +192,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { usePartyStore } from '@/store/partyStore';
-import PartyDetailsModal from '@/components/PartyDetailsModal.vue';
-import CreatePartyModal from '@/components/CreatePartyModal.vue';
-import EditPartyModal from '@/components/EditPartyModal.vue';
-import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue';
+import PartyDetailsModal from '@/components/Party/PartyDetailsModal.vue';
+import CreatePartyModal from '@/components/Party/CreatePartyModal.vue';
+import EditPartyModal from '@/components/Party/EditPartyModal.vue';
+import ConfirmDeleteModal from '@/components/Common/ConfirmDeleteModal.vue';
 import type { Party } from '@/store/partyStore';
 
 const partyStore = usePartyStore();

@@ -83,7 +83,17 @@ Invisio
    │  │  │  └─ variables.scss
    │  │  └─ vue.svg
    │  ├─ components
+   │  │  ├─ AdjustStockModal.vue
+   │  │  ├─ ConfirmDeleteModal.vue
+   │  │  ├─ CreateCompanyModal.vue
+   │  │  ├─ CreateItemModal.vue
+   │  │  ├─ CreatePartyModal.vue
+   │  │  ├─ EditCompanyModal.vue
+   │  │  ├─ EditItemModal.vue
+   │  │  ├─ EditPartyModal.vue
+   │  │  ├─ ItemDetailsModal.vue
    │  │  ├─ Leftsidebar.vue
+   │  │  ├─ PartyDetailsModal.vue
    │  │  └─ layout
    │  │     ├─ Contact.vue
    │  │     ├─ FAQ.vue
@@ -96,14 +106,20 @@ Invisio
    │  ├─ router
    │  │  └─ index.ts
    │  ├─ store
-   │  │  └─ authStore.ts
+   │  │  ├─ authStore.ts
+   │  │  ├─ companyStore.ts
+   │  │  ├─ expenseStore.ts
+   │  │  ├─ itemStore.ts
+   │  │  └─ partyStore.ts
    │  ├─ style.css
    │  ├─ views
    │  │  ├─ Dashboard.vue
+   │  │  ├─ Expense.vue
    │  │  ├─ Finance.vue
    │  │  ├─ Home.vue
    │  │  ├─ Inventory.vue
    │  │  ├─ Login.vue
+   │  │  ├─ Parties.vue
    │  │  ├─ Register.vue
    │  │  ├─ Reports.vue
    │  │  └─ Settings.vue
