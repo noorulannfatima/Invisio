@@ -1,128 +1,214 @@
 <template>
   <div class="page finance">
-    <h1 class="page-title">Finance Overview</h1>
-
-    <div class="summary-grid">
-      <div class="card" v-for="(item, i) in summary" :key="i">
-        <h3>{{ item.label }}</h3>
-        <p>{{ item.value }}</p>
+    <!-- Header -->
+    <div class="finance-header">
+      <div class="header-content">
+        <h1 class="page-title">
+          <i class="fas fa-chart-line"></i>
+          Finance Overview
+        </h1>
+        <p class="header-subtitle">Manage your sales, purchases, and financial metrics</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" @click="showCreateInvoice = true">
+          <i class="fas fa-plus"></i> Create Invoice
+        </button>
+        <button class="btn btn-secondary" @click="showCreateBill = true">
+          <i class="fas fa-file-invoice"></i> Create Bill
+        </button>
       </div>
     </div>
 
-    <div class="section">
-      <h2>Recent Transactions</h2>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(txn, i) in transactions" :key="i">
-            <td>{{ txn.date }}</td>
-            <td>{{ txn.type }}</td>
-            <td>{{ txn.amount }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Date Range Filter -->
+    <FinanceDateFilter @apply-filter="applyDateFilter" />
+
+    <!-- Summary Cards -->
+    <FinanceSummaryCards 
+      :sales-total="totalSalesAmount"
+      :purchase-total="totalPurchaseAmount"
+      :net-profit="netProfit"
+      :pending-count="pendingInvoices.length"
+    />
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <FinanceRevenueChart :invoices="salesInvoices" />
+      <FinanceExpenseChart :invoices="purchaseInvoices" />
     </div>
+
+    <!-- Transactions Table -->
+    <FinanceTransactionTable 
+      :transactions="invoices"
+      :loading="loading"
+      @view-details="viewTransactionDetails"
+      @refresh="fetchAllInvoices"
+    />
+
+    <!-- GST Summary -->
+    <FinanceGSTSummary 
+      v-if="gstSummary"
+      :gst-data="gstSummary"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-interface Summary {
-  label: string
-  value: string | number
-}
+import { ref, onMounted, computed } from 'vue';
+import { useTransactionStore, type TransactionFilters } from '@/store/transactionStore';
+import FinanceSummaryCards from '@/components/Transaction/FinanceSummaryCards.vue';
+import FinanceRevenueChart from '@/components/Transaction/FinanceRevenueChart.vue';
+import FinanceExpenseChart from '@/components/Transaction/FinanceExpenseChart.vue';
+import FinanceTransactionTable from '@/components/Transaction/FinanceTransactionTable.vue';
+import FinanceDateFilter from '@/components/Transaction/FinanceDateFilter.vue';
+import FinanceGSTSummary from '@/components/Transaction/FinanceGSTSummary.vue';
 
-interface Transaction {
-  date: string
-  type: string
-  amount: string
-}
+const store = useTransactionStore();
+const showCreateInvoice = ref(false);
+const showCreateBill = ref(false);
 
-const summary: Summary[] = [
-  { label: 'Total Revenue', value: '$25,430' },
-  { label: 'Expenses', value: '$12,150' },
-  { label: 'Net Profit', value: '$13,280' },
-]
+// Computed properties from store
+const invoices = computed(() => store.invoices);
+const loading = computed(() => store.loading);
+const salesInvoices = computed(() => store.salesInvoices);
+const purchaseInvoices = computed(() => store.purchaseInvoices);
+const totalSalesAmount = computed(() => store.totalSalesAmount);
+const totalPurchaseAmount = computed(() => store.totalPurchaseAmount);
+const pendingInvoices = computed(() => store.pendingInvoices);
+const gstSummary = computed(() => store.gstSummary);
 
-const transactions: Transaction[] = [
-  { date: 'Oct 12, 2025', type: 'Sale', amount: '$1,200' },
-  { date: 'Oct 11, 2025', type: 'Purchase', amount: '-$600' },
-  { date: 'Oct 10, 2025', type: 'Expense', amount: '-$120' },
-]
+const netProfit = computed(() => totalSalesAmount.value - totalPurchaseAmount.value);
+
+onMounted(async () => {
+  await fetchAllInvoices();
+  await store.fetchGSTSummary();
+});
+
+const fetchAllInvoices = async () => {
+  await store.fetchAllInvoices();
+};
+
+const applyDateFilter = async (filters: TransactionFilters) => {
+  await store.fetchAllInvoices(filters);
+  await store.fetchGSTSummary(filters.startDate, filters.endDate);
+};
+
+const viewTransactionDetails = async (transactionId: number) => {
+  await store.fetchInvoiceById(transactionId);
+  // Could open a modal here
+};
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/styles/variables.scss';
+
 .page {
   margin-left: 260px;
   margin-top: 70px;
   padding: 2rem;
-  background-color: #f8f9fb;
+  background: linear-gradient(135deg, #f8f9fb 0%, #f0f2f5 100%);
   min-height: calc(100vh - 70px);
 
-  .page-title {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-  }
+  .finance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      text-align: center;
-
-      h3 {
-        font-size: 1rem;
-        color: #555;
-      }
-
-      p {
-        font-size: 1.4rem;
+    .header-content {
+      .page-title {
+        font-size: 1.8rem;
         font-weight: 700;
-        color: #222;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 0.3rem;
+
+        i {
+          color: #007bff;
+        }
+      }
+
+      .header-subtitle {
+        color: #666;
+        font-size: 0.95rem;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+
+      .btn {
+        padding: 0.65rem 1.2rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &.btn-primary {
+          background: #007bff;
+          color: white;
+
+          &:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+          }
+        }
+
+        &.btn-secondary {
+          background: #6c757d;
+          color: white;
+
+          &:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+          }
+        }
       }
     }
   }
 
-  .section {
-    margin-top: 2.5rem;
+  .charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+}
 
-    h2 {
-      margin-bottom: 1rem;
-      color: #333;
-      font-size: 1.3rem;
+@media (max-width: 1024px) {
+  .page {
+    margin-left: 0;
+
+    .finance-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.5rem;
+
+      .header-actions {
+        width: 100%;
+
+        .btn {
+          flex: 1;
+          justify-content: center;
+        }
+      }
     }
 
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-
-      th,
-      td {
-        padding: 1rem;
-        text-align: left;
-        border-bottom: 1px solid #eee;
-      }
-
-      th {
-        background-color: #f0f2f5;
-        color: #555;
-        font-weight: 600;
-      }
+    .charts-section {
+      grid-template-columns: 1fr;
     }
   }
 }

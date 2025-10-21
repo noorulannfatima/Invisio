@@ -83,23 +83,47 @@ Invisio
    │  │  │  └─ variables.scss
    │  │  └─ vue.svg
    │  ├─ components
-   │  │  ├─ AdjustStockModal.vue
-   │  │  ├─ ConfirmDeleteModal.vue
-   │  │  ├─ CreateCompanyModal.vue
-   │  │  ├─ CreateItemModal.vue
-   │  │  ├─ CreatePartyModal.vue
-   │  │  ├─ EditCompanyModal.vue
-   │  │  ├─ EditItemModal.vue
-   │  │  ├─ EditPartyModal.vue
-   │  │  ├─ ItemDetailsModal.vue
-   │  │  ├─ Leftsidebar.vue
-   │  │  ├─ PartyDetailsModal.vue
-   │  │  └─ layout
-   │  │     ├─ Contact.vue
-   │  │     ├─ FAQ.vue
-   │  │     ├─ Features.vue
-   │  │     ├─ Footer.vue
-   │  │     └─ Navbar.vue
+   │  │  ├─ Common
+   │  │  │  ├─ ConfirmDeleteModal.vue
+   │  │  │  ├─ Leftsidebar.vue
+   │  │  │  └─ Navbar.vue
+   │  │  ├─ Company
+   │  │  │  ├─ CreateCompanyModal.vue
+   │  │  │  └─ EditCompanyModal.vue
+   │  │  ├─ Dashboard
+   │  │  │  ├─ DashboardActionBar.vue
+   │  │  │  ├─ DashboardCompanyCard.vue
+   │  │  │  ├─ DashboardExpenseChart.vue
+   │  │  │  ├─ DashboardFinanceCard.vue
+   │  │  │  ├─ DashboardHeader.vue
+   │  │  │  ├─ DashboardQuickStats.vue
+   │  │  │  ├─ DashboardRevenueChart.vue
+   │  │  │  ├─ DashboardStatCard.vue
+   │  │  │  ├─ DashboardWelcome.vue
+   │  │  │  └─ EditProfileModal.vue
+   │  │  ├─ Expense
+   │  │  │  ├─ ExpenseDetailsModal.vue
+   │  │  │  ├─ ExpenseFilters.vue
+   │  │  │  ├─ ExpenseForm.vue
+   │  │  │  ├─ ExpenseHeader.vue
+   │  │  │  ├─ ExpenseReport.vue
+   │  │  │  ├─ ExpenseSummaryCards.vue
+   │  │  │  └─ ExpenseTable.vue
+   │  │  ├─ Home
+   │  │  │  ├─ Contact.vue
+   │  │  │  ├─ FAQ.vue
+   │  │  │  ├─ Features.vue
+   │  │  │  └─ Footer.vue
+   │  │  ├─ Inventory
+   │  │  │  ├─ AdjustStockModal.vue
+   │  │  │  ├─ CreateItemModal.vue
+   │  │  │  ├─ EditItemModal.vue
+   │  │  │  └─ ItemDetailsModal.vue
+   │  │  ├─ Party
+   │  │  │  ├─ CreatePartyModal.vue
+   │  │  │  ├─ EditPartyModal.vue
+   │  │  │  └─ PartyDetailsModal.vue
+   │  │  └─ Transaction
    │  ├─ layouts
    │  │  └─ DashboardLayout.vue
    │  ├─ main.ts
@@ -110,7 +134,8 @@ Invisio
    │  │  ├─ companyStore.ts
    │  │  ├─ expenseStore.ts
    │  │  ├─ itemStore.ts
-   │  │  └─ partyStore.ts
+   │  │  ├─ partyStore.ts
+   │  │  └─ transactionStore.ts
    │  ├─ style.css
    │  ├─ views
    │  │  ├─ Dashboard.vue
