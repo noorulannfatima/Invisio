@@ -60,7 +60,6 @@ Invisio
 │     └─ 20251010182807-demo-expenses.js
 └─ frontend
    ├─ .DS_Store
-   ├─ README.md
    ├─ index.html
    ├─ package-lock.json
    ├─ package.json
@@ -123,7 +122,15 @@ Invisio
    │  │  │  ├─ CreatePartyModal.vue
    │  │  │  ├─ EditPartyModal.vue
    │  │  │  └─ PartyDetailsModal.vue
+   │  │  ├─ Reports
+   │  │  ├─ Settings
    │  │  └─ Transaction
+   │  │     ├─ FinanceDateFilter.vue
+   │  │     ├─ FinanceExpenseChart.vue
+   │  │     ├─ FinanceGSTSummary.vue
+   │  │     ├─ FinanceRevenueChart.vue
+   │  │     ├─ FinanceSummaryCards.vue
+   │  │     └─ FinanceTransactionTable.vue
    │  ├─ layouts
    │  │  └─ DashboardLayout.vue
    │  ├─ main.ts
@@ -135,6 +142,8 @@ Invisio
    │  │  ├─ expenseStore.ts
    │  │  ├─ itemStore.ts
    │  │  ├─ partyStore.ts
+   │  │  ├─ reportStore.ts
+   │  │  ├─ settingStore.ts
    │  │  └─ transactionStore.ts
    │  ├─ style.css
    │  ├─ views
