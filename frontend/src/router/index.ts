@@ -26,13 +26,38 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/layouts/DashboardLayout.vue'),
     meta: { requiresAuth: true },
     children: [
+      // Main Dashboard
       { path: '', name: 'Dashboard', component: () => import('@/views/Dashboard.vue') },
-      { path: '/finance', name: 'Finance', component: () => import('@/views/Finance.vue') },
-      { path: '/reports', name: 'Reports', component: () => import('@/views/Reports.vue') },
-      { path: '/parties', name: 'Parties', component: () => import('@/views/Parties.vue') },
-      { path: '/expense', name: 'Expense', component: () => import('@/views/Expense.vue') },
+
+      // Inventory
       { path: '/inventory', name: 'Inventory', component: () => import('@/views/Inventory.vue') },
+
+      // Parties
+      { path: '/parties', name: 'Parties', component: () => import('@/views/Parties.vue') },
+
+      // Expense
+      { path: '/expense', name: 'Expense', component: () => import('@/views/Expense.vue') },
+
+      // Transactions (formerly Finance)
+      { path: '/finance', name: 'Transactions', component: () => import('@/views/Finance.vue') },
+
+      // Profit & Loss
+      { path: '/profit-loss', name: 'ProfitLoss', component: () => import('@/views/ProfitLoss.vue') },
+
+      // Stock Summary
+      { path: '/stock-summary', name: 'StockSummary', component: () => import('@/views/StockSummary.vue') },
+
+      // Party Ledger
+      { path: '/party-ledger', name: 'PartyLedger', component: () => import('@/views/PartyLedger.vue') },
+
+      // Brain (AI)
+      { path: '/brain', name: 'Brain', component: () => import('@/views/Brain.vue') },
+
+      // Settings
       { path: '/settings', name: 'Settings', component: () => import('@/views/Settings.vue') },
+
+      // Reports (keep if still needed)
+      { path: '/reports', name: 'Reports', component: () => import('@/views/Reports.vue') },
     ],
   },
   {
@@ -46,6 +71,7 @@ const router = createRouter({
   routes,
 })
 
+// Navigation Guards
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 

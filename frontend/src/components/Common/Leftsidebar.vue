@@ -1,4 +1,3 @@
-<!-- components/Common/Leftsidebar.vue -->
 <template>
   <div class="sidebar-wrapper">
     <!-- Sidebar -->
@@ -61,9 +60,9 @@ const menuItems: MenuItem[] = [
   { label: 'Parties', path: '/parties', icon: 'fas fa-users' },
   { label: 'Expense', path: '/expense', icon: 'fas fa-receipt' },
   { label: 'Transactions', path: '/finance', icon: 'fas fa-dollar-sign' },
-  { label: 'Reports', path: '/reports', icon: 'fas fa-chart-line' },
-  { label: 'Stock Summary', path: '/stocksummary', icon: 'fas fa-cube' },
-  { label: 'Party Ledger', path: '/partyledger', icon: 'fas fa-book' },
+  { label: 'Profit & Loss', path: '/profit-loss', icon: 'fas fa-chart-line' },
+  { label: 'Stock Summary', path: '/stock-summary', icon: 'fas fa-cube' },
+  { label: 'Party Ledger', path: '/party-ledger', icon: 'fas fa-book' },
   { label: 'Brain', path: '/brain', icon: 'fas fa-brain' },
   { label: 'Settings', path: '/settings', icon: 'fas fa-cog' },
 ]
@@ -78,6 +77,7 @@ const getInitials = (name?: string): string => {
     .slice(0, 2)
 }
 </script>
+
 
 <style lang="scss" scoped>
 // Sidebar Container
