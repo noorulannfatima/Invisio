@@ -1,6 +1,7 @@
 // controllers/settingsController.js
 const { User, Company, Party, Transaction, Expense } = require('../models');
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcryptjs");
+
 
 // ========== USER SETTINGS ==========
 

@@ -42,6 +42,7 @@ Invisio
 │  ├─ package-lock.json
 │  ├─ package.json
 │  ├─ routes
+│  │  ├─ ai.js
 │  │  ├─ authRoutes.js
 │  │  ├─ companyRoutes.js
 │  │  ├─ expenseRoutes.js
@@ -122,8 +123,10 @@ Invisio
    │  │  │  ├─ CreatePartyModal.vue
    │  │  │  ├─ EditPartyModal.vue
    │  │  │  └─ PartyDetailsModal.vue
-   │  │  ├─ Reports
    │  │  ├─ Settings
+   │  │  │  ├─ SettingsCompany.vue
+   │  │  │  ├─ SettingsDangerZone.vue
+   │  │  │  └─ SettingsProfile.vue
    │  │  └─ Transaction
    │  │     ├─ FinanceDateFilter.vue
    │  │     ├─ FinanceExpenseChart.vue
@@ -147,6 +150,7 @@ Invisio
    │  │  └─ transactionStore.ts
    │  ├─ style.css
    │  ├─ views
+   │  │  ├─ Brain.vue
    │  │  ├─ Dashboard.vue
    │  │  ├─ Expense.vue
    │  │  ├─ Finance.vue
@@ -154,9 +158,11 @@ Invisio
    │  │  ├─ Inventory.vue
    │  │  ├─ Login.vue
    │  │  ├─ Parties.vue
+   │  │  ├─ PartyLedger.vue
+   │  │  ├─ ProfitLoss.vue
    │  │  ├─ Register.vue
-   │  │  ├─ Reports.vue
-   │  │  └─ Settings.vue
+   │  │  ├─ Settings.vue
+   │  │  └─ StockSummary.vue
    │  └─ vite-env.d.ts
    ├─ tsconfig.app.json
    ├─ tsconfig.json

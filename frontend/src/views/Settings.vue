@@ -198,7 +198,7 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .settings-page {
-    margin-left: 0;
+    margin-left: 10;
     padding: 1.5rem;
   }
 

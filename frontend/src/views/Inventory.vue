@@ -2,45 +2,11 @@
   <div class="inventory">
     <!-- Page Header -->
     <div class="inventory-header">
-      <div class="header-content">
-        <h1 class="page-title">Inventory Management</h1>
-        <button class="btn btn-primary" @click="showCreateModal = true">
+      <h1>Inventory Management</h1>
+      <button class="btn btn-primary" @click="showCreateModal = true">
           <i class="fas fa-plus"></i>
           Add New Item
         </button>
-      </div>
-    </div>
-
-    <!-- Stats Bar -->
-    <div class="stats-bar">
-      <div class="stat-item">
-        <span class="stat-icon total"><i class="fas fa-box"></i></span>
-        <div class="stat-content">
-          <span class="stat-label">Total Items</span>
-          <span class="stat-value">{{ itemStore.itemCount }}</span>
-        </div>
-      </div>
-      <div class="stat-item">
-        <span class="stat-icon value"><i class="fas fa-dollar-sign"></i></span>
-        <div class="stat-content">
-          <span class="stat-label">Inventory Value</span>
-          <span class="stat-value">${{ formatCurrency(itemStore.totalInventoryValue) }}</span>
-        </div>
-      </div>
-      <div class="stat-item">
-        <span class="stat-icon profit"><i class="fas fa-chart-line"></i></span>
-        <div class="stat-content">
-          <span class="stat-label">Total Profit</span>
-          <span class="stat-value">{{ formatCurrency(itemStore.totalProfit) }}</span>
-        </div>
-      </div>
-      <div class="stat-item">
-        <span class="stat-icon warning"><i class="fas fa-exclamation-triangle"></i></span>
-        <div class="stat-content">
-          <span class="stat-label">Low Stock</span>
-          <span class="stat-value">{{ itemStore.lowStockItems.length }}</span>
-        </div>
-      </div>
     </div>
 
     <!-- Filters Section -->
@@ -71,22 +37,20 @@
           <option value="stock-low">Stock (Low)</option>
           <option value="stock-high">Stock (High)</option>
         </select>
-
-        <button class="btn-refresh" @click="refreshItems" :disabled="itemStore.isLoading">
-          <i class="fas fa-sync" :class="{ 'spin': itemStore.isLoading }"></i>
-        </button>
       </div>
     </div>
 
     <!-- Error Message -->
-    <div v-if="itemStore.error" class="error-alert">
+    <div v-if="itemStore.error" class="alert alert-error">
       <i class="fas fa-exclamation-circle"></i>
-      {{ itemStore.error }}
-      <button class="btn-close" @click="itemStore.clearError">×</button>
+      <span>{{ itemStore.error }}</span>
+      <button @click="itemStore.clearError" class="close-btn">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
     <!-- Loading State -->
-    <div v-if="itemStore.isLoading && itemStore.items.length === 0" class="loading-state">
+    <div v-if="itemStore.isLoading && itemStore.items.length === 0" class="loading-container">
       <div class="spinner"></div>
       <p>Loading inventory...</p>
     </div>
@@ -103,7 +67,7 @@
     </div>
 
     <!-- Items Table -->
-    <div v-else class="table-container">
+    <div v-else class="table-wrapper">
       <table class="items-table">
         <thead>
           <tr>
@@ -131,7 +95,7 @@
               </span>
             </td>
             <td class="text-right">${{ formatCurrency(item.Purchase_Price) }}</td>
-            <td class="text-right">${{ formatCurrency(item.Selling_Price) }}</td>
+            <td class="text-right">${{formatCurrency(item.Selling_Price) }}</td>
             <td class="text-center">
               <span :class="['status-badge', getStatusClass(item.Current_Stock)]">
                 {{ getStatusText(item.Current_Stock) }}
@@ -366,94 +330,27 @@ const formatCurrency = (value: number): string => {
   margin-left: 260px;
   margin-top: 70px;
   padding: 2rem;
-  background-color: #f8f9fb;
+  background-color: #f5f6fa;
   min-height: calc(100vh - 70px);
+  width: calc(100% - 260px);
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-// Header
+// Page Header
 .inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 
-  .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .page-title {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #222;
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e1e2d;
     margin: 0;
-  }
-}
-
-// Stats Bar
-.stats-bar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-
-  .stat-item {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-    }
-
-    .stat-icon {
-      width: 50px;
-      height: 50px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      color: white;
-      flex-shrink: 0;
-
-      &.total {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      }
-
-      &.value {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      }
-
-      &.profit {
-        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-      }
-
-      &.warning {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-      }
-    }
-
-    .stat-content {
-      display: flex;
-      flex-direction: column;
-
-      .stat-label {
-        font-size: 0.85rem;
-        color: #718096;
-        font-weight: 500;
-      }
-
-      .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #2d3748;
-      }
-    }
   }
 }
 
@@ -463,9 +360,10 @@ const formatCurrency = (value: number): string => {
   gap: 1rem;
   margin-bottom: 2rem;
   align-items: center;
+  flex-wrap: wrap;
 
   .search-box {
-    flex: 1;
+    flex: 0 1 300px;
     position: relative;
     display: flex;
     align-items: center;
@@ -473,9 +371,11 @@ const formatCurrency = (value: number): string => {
     border-radius: 8px;
     border: 1px solid #e2e8f0;
     padding: 0 1rem;
+    transition: all 0.3s ease;
 
     i {
       color: #a0aec0;
+      flex-shrink: 0;
     }
 
     input {
@@ -484,6 +384,8 @@ const formatCurrency = (value: number): string => {
       padding: 0.75rem 1rem;
       font-size: 1rem;
       outline: none;
+      background: transparent;
+      min-width: 0;
 
       &::placeholder {
         color: #cbd5e0;
@@ -500,6 +402,7 @@ const formatCurrency = (value: number): string => {
     display: flex;
     gap: 1rem;
     align-items: center;
+    flex-wrap: wrap;
 
     .filter-select {
       padding: 0.75rem 1rem;
@@ -509,6 +412,7 @@ const formatCurrency = (value: number): string => {
       cursor: pointer;
       font-size: 1rem;
       transition: all 0.3s ease;
+      white-space: nowrap;
 
       &:hover {
         border-color: #cbd5e0;
@@ -520,75 +424,64 @@ const formatCurrency = (value: number): string => {
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
       }
     }
+  }
+}
 
-    .btn-refresh {
-      width: 40px;
-      height: 40px;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      background: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #718096;
-      transition: all 0.3s ease;
+// Alert Styles
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  animation: slideIn 0.3s ease;
 
-      &:hover:not(:disabled) {
-        border-color: #667eea;
-        color: #667eea;
-        background: #f7fafc;
-      }
+  i {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
 
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
+  &.alert-error {
+    background: #fee2e2;
+    color: #7f1d1d;
+    border: 1px solid #fecaca;
 
-      i.spin {
-        animation: spin 1s linear infinite;
-      }
+    i {
+      color: #dc2626;
+    }
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    margin-left: auto;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 1;
     }
   }
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
   }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-// Error Alert
-.error-alert {
-  background: #fed7d7;
-  border: 1px solid #fc8181;
-  color: #c53030;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-
-  i {
-    flex-shrink: 0;
-  }
-
-  .btn-close {
-    margin-left: auto;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #c53030;
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
-// Loading State
-.loading-state {
+// Loading Container
+.loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -599,15 +492,24 @@ const formatCurrency = (value: number): string => {
   .spinner {
     width: 50px;
     height: 50px;
-    border: 4px solid rgba(102, 126, 234, 0.2);
-    border-top-color: #667eea;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #667eea;
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
 
   p {
-    color: #718096;
+    color: #6b7280;
     font-size: 1rem;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
 
@@ -637,12 +539,14 @@ const formatCurrency = (value: number): string => {
   }
 }
 
-// Table
-.table-container {
+// Table Wrapper
+.table-wrapper {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .items-table {
@@ -661,6 +565,7 @@ const formatCurrency = (value: number): string => {
       font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
   }
 
@@ -756,6 +661,7 @@ const formatCurrency = (value: number): string => {
     display: flex;
     gap: 0.5rem;
     justify-content: center;
+    white-space: nowrap;
   }
 
   .btn-action {
@@ -770,6 +676,7 @@ const formatCurrency = (value: number): string => {
     justify-content: center;
     transition: all 0.3s ease;
     font-size: 0.9rem;
+    flex-shrink: 0;
 
     &.view {
       &:hover {
@@ -817,6 +724,8 @@ const formatCurrency = (value: number): string => {
   align-items: center;
   gap: 0.5rem;
   font-size: 1rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &.btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -834,77 +743,201 @@ const formatCurrency = (value: number): string => {
   }
 }
 
-// Responsive
+// Responsive: Laptop (1200px - 1024px)
 @media (max-width: 1200px) {
-  .filters-section {
-    flex-wrap: wrap;
-
-    .filter-controls {
-      width: 100%;
-    }
-  }
-}
-
-@media (max-width: 768px) {
   .inventory {
-    margin-left: 0;
-    margin-top: 60px;
+    width: calc(100% - 260px);
     padding: 1.5rem;
   }
 
-  .inventory-header .header-content {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-
-  .stats-bar {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .items-table {
-    font-size: 0.9rem;
-
-    td,
-    th {
-      padding: 0.75rem;
+  .inventory-header {
+    h1 {
+      font-size: 1.75rem;
     }
   }
 
   .filters-section {
-    flex-direction: column;
+    .search-box {
+      flex: 0 1 250px;
+    }
 
-    .filter-controls {
-      width: 100%;
-      flex-wrap: wrap;
+    .filter-select {
+      font-size: 0.95rem;
+    }
+  }
+
+  .items-table {
+    td, th {
+      padding: 1rem;
+      font-size: 0.9rem;
     }
   }
 }
 
-@media (max-width: 480px) {
+// Responsive: Tablet (1024px - 768px)
+@media (max-width: 1024px) {
   .inventory {
+    margin-left: 70px;
+    width: calc(100% - 70px);
+    padding: 1.5rem 1rem;
+  }
+
+  .inventory-header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .filters-section {
+    width: 100%;
+    flex-direction: column;
+    gap: 1rem;
+
+    .search-box {
+      width: 100%;
+      flex: 1 1 auto;
+    }
+
+    .filter-controls {
+      width: 100%;
+      gap: 0.75rem;
+    }
+  }
+
+  .items-table {
+    font-size: 0.85rem;
+
+    td, th {
+      padding: 0.9rem 0.7rem;
+    }
+
+    .text-right {
+      font-size: 0.85rem;
+    }
+  }
+}
+
+// Responsive: Mobile (768px and below)
+@media (max-width: 768px) {
+  .inventory {
+    margin-left: 0;
+    width: 100%;
+    margin-top: 60px;
     padding: 1rem;
   }
 
-  .stats-bar {
-    grid-template-columns: 1fr;
+  .inventory-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+
+    h1 {
+      font-size: 1.3rem;
+      margin: 0;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .filters-section {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .search-box {
+      width: 100%;
+      flex: none;
+    }
+
+    .filter-controls {
+      width: 100%;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .filter-select {
+        width: 100%;
+      }
+    }
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .items-table {
     font-size: 0.8rem;
+    min-width: 600px;
 
-    th,
+    th {
+      padding: 0.75rem 0.5rem;
+      font-size: 0.75rem;
+    }
+
     td {
-      padding: 0.5rem;
+      padding: 0.75rem 0.5rem;
     }
 
     .actions-cell {
-      flex-direction: column;
+      gap: 0.25rem;
     }
 
     .btn-action {
       width: 32px;
       height: 32px;
+      font-size: 0.75rem;
+    }
+  }
+}
+
+// Responsive: Small Mobile (480px and below)
+@media (max-width: 480px) {
+  .inventory {
+    padding: 0.75rem;
+  }
+
+  .inventory-header {
+    h1 {
+      font-size: 1.1rem;
+    }
+  }
+
+  .filters-section {
+    gap: 0.5rem;
+
+    .search-box {
+      padding: 0 0.75rem;
+
+      input {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.9rem;
+      }
+
+      i {
+        font-size: 0.9rem;
+      }
+    }
+
+    .filter-controls {
+      .filter-select {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .items-table {
+    font-size: 0.75rem;
+    min-width: 550px;
+
+    th, td {
+      padding: 0.5rem;
     }
   }
 }

@@ -13,6 +13,10 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const aiRoutes = require("./routes/ai.js");
+
+
+
 
 dotenv.config();
 
@@ -21,7 +25,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cookieParser());
 app.use(cors({
-    origin: true, // Allows requests from any origin
+    origin: "http://localhost:5173", 
     credentials: true, // Important for cookies
 }));
 app.use(express.json()); // To parse JSON bodies
@@ -36,6 +40,7 @@ app.use('/api/transaction', transactionRoutes);
 app.use('/api/expense', expenseRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use("/api/ai", aiRoutes);
 
 
 
@@ -58,6 +63,8 @@ const startServer = async () => {
     console.error("❌ Unable to connect to the database:", error);
     process.exit(1); 
   }
+  console.log("HF_API_KEY loaded:", process.env.HF_API_KEY ? "✅ Yes" : "❌ No");
+
 };
 
 startServer();

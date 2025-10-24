@@ -245,6 +245,7 @@ const clearFilters = async () => {
 .expense-container {
   padding: 2rem;
   margin-left: 260px;
+  margin-top: 70px;
   background: #f5f6fa;
   min-height: 100vh;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);

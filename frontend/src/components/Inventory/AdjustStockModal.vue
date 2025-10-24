@@ -1,4 +1,4 @@
-<!-- AdjustStockModal.vue -->
+<!-- AdjustStockModal.vue - RESPONSIVE VERSION -->
 <template>
   <div class="modal-overlay" @click.self="closeModal">
     <div class="modal-content">
@@ -185,6 +185,7 @@ const closeModal = () => {
   align-items: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
+  padding: 1rem;
 }
 
 @keyframes fadeIn {
@@ -200,7 +201,7 @@ const closeModal = () => {
   background: white;
   border-radius: 12px;
   max-width: 500px;
-  width: 90%;
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -224,6 +225,7 @@ const closeModal = () => {
   align-items: center;
   padding: 1.5rem;
   border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
 
   h2 {
     margin: 0;
@@ -238,6 +240,7 @@ const closeModal = () => {
     cursor: pointer;
     color: #718096;
     line-height: 1;
+    padding: 0;
 
     &:hover {
       color: #2d3748;
@@ -247,6 +250,9 @@ const closeModal = () => {
 
 .modal-form {
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .item-info {
@@ -254,12 +260,12 @@ const closeModal = () => {
   border-left: 4px solid #667eea;
   padding: 1rem;
   border-radius: 8px;
-  margin-bottom: 1.5rem;
 
   h3 {
     margin: 0 0 0.5rem 0;
     color: #2d3748;
     font-size: 1.1rem;
+    word-break: break-word;
   }
 
   .current-stock {
@@ -273,7 +279,8 @@ const closeModal = () => {
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
 
   label {
     display: block;
@@ -353,6 +360,7 @@ const closeModal = () => {
     color: #667eea;
     font-weight: bold;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 
     &:hover:not(:disabled) {
       border-color: #667eea;
@@ -392,7 +400,6 @@ const closeModal = () => {
 .alert {
   padding: 1rem;
   border-radius: 8px;
-  margin-bottom: 1.5rem;
 
   &.alert-error {
     background-color: #fed7d7;
@@ -409,6 +416,8 @@ const closeModal = () => {
   border-top: 1px solid #e2e8f0;
   background-color: #f7fafc;
   border-radius: 0 0 12px 12px;
+  flex-shrink: 0;
+  flex-wrap: wrap-reverse;
 }
 
 .btn {
@@ -420,7 +429,10 @@ const closeModal = () => {
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  font-size: 0.95rem;
+  min-height: 40px;
 
   &.btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -462,5 +474,184 @@ const closeModal = () => {
     transform: rotate(360deg);
   }
 }
-</style>
 
+// Tablet (1024px and below)
+@media (max-width: 1024px) {
+  .modal-overlay {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    max-width: 450px;
+  }
+
+  .modal-header {
+    padding: 1.25rem;
+
+    h2 {
+      font-size: 1.15rem;
+    }
+  }
+
+  .modal-form {
+    padding: 1.25rem;
+  }
+}
+
+// Mobile (768px and below)
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    width: 100%;
+    max-height: 85vh;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .modal-header {
+    padding: 1rem;
+
+    h2 {
+      font-size: 1.1rem;
+    }
+
+    .btn-close {
+      font-size: 1.75rem;
+    }
+  }
+
+  .modal-form {
+    padding: 1rem;
+    gap: 1.25rem;
+  }
+
+  .item-info {
+    padding: 0.75rem;
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    .current-stock {
+      font-size: 0.85rem;
+    }
+  }
+
+  .form-group {
+    label {
+      font-size: 0.9rem;
+    }
+
+    select,
+    textarea {
+      padding: 0.65rem;
+      font-size: 16px; // Prevents zoom on iOS
+    }
+  }
+
+  .quantity-input {
+    button {
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+    }
+  }
+
+  .modal-footer {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+// Small Mobile (480px and below)
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .modal-header {
+    padding: 0.875rem;
+
+    h2 {
+      font-size: 1rem;
+    }
+
+    .btn-close {
+      font-size: 1.5rem;
+    }
+  }
+
+  .modal-form {
+    padding: 0.875rem;
+    gap: 1rem;
+  }
+
+  .item-info {
+    padding: 0.625rem;
+
+    h3 {
+      font-size: 0.95rem;
+    }
+
+    .current-stock {
+      font-size: 0.8rem;
+    }
+  }
+
+  .form-group {
+    label {
+      font-size: 0.85rem;
+    }
+
+    select,
+    textarea {
+      padding: 0.6rem;
+      font-size: 16px;
+    }
+
+    .helper-text,
+    .error-message {
+      font-size: 0.8rem;
+    }
+  }
+
+  .quantity-input {
+    gap: 0.25rem;
+
+    button {
+      width: 32px;
+      height: 32px;
+      font-size: 0.9rem;
+    }
+
+    input {
+      font-size: 0.9rem;
+    }
+  }
+
+  .modal-footer {
+    padding: 0.875rem;
+    gap: 0.5rem;
+  }
+
+  .btn {
+    padding: 0.6rem 0.875rem;
+    font-size: 0.85rem;
+  }
+
+  .alert {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+</style>
