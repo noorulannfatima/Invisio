@@ -6,9 +6,9 @@ const { Op } = require('sequelize');
 const createParty = async (req, res) => {
   try {
     const userId = req.user.User_ID;
-    const { Name, Type, Email, Mobile_Number, Address, GST_Number } = req.body;
+    const { Name, Type, Mobile, Outstanding_Balance } = req.body;
 
-    // Validate input
+    // Validate required fields
     if (!Name || !Type) {
       return res.status(400).json({ message: "Party name and type are required" });
     }
@@ -24,20 +24,20 @@ const createParty = async (req, res) => {
       return res.status(400).json({ message: "Type must be 'Customer', 'Supplier', or 'Both'" });
     }
 
-    // Validate email if provided
-    if (Email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(Email)) {
-        return res.status(400).json({ message: "Invalid email format" });
-      }
-    }
-
     // Validate mobile number if provided
-    if (Mobile_Number && (Mobile_Number.length < 10 || Mobile_Number.length > 20)) {
+    if (Mobile && (Mobile.length < 10 || Mobile.length > 20)) {
       return res.status(400).json({ message: "Mobile number must be between 10 and 20 characters" });
     }
 
-    // Get user's company
+    // Validate outstanding balance if provided
+    if (Outstanding_Balance !== undefined && Outstanding_Balance !== null) {
+      const balance = parseFloat(Outstanding_Balance);
+      if (isNaN(balance) || balance < 0) {
+        return res.status(400).json({ message: "Outstanding balance must be a positive number" });
+      }
+    }
+
+    // Get user's company (use { paranoid: false } to bypass soft delete filter if needed)
     const company = await Company.findOne({
       where: { User_ID: userId, is_deleted: false }
     });
@@ -50,7 +50,9 @@ const createParty = async (req, res) => {
     const partyExists = await Party.findOne({
       where: {
         Company_ID: company.Company_ID,
-        Name,
+        Name: {
+          [Op.iLike]: Name
+        },
         is_deleted: false
       }
     });
@@ -59,15 +61,13 @@ const createParty = async (req, res) => {
       return res.status(400).json({ message: "Party with this name already exists for your company" });
     }
 
-    // Create new party
+    // Create new party with only the fields that exist in the model
     const party = await Party.create({
       Company_ID: company.Company_ID,
       Name,
       Type,
-      Email: Email || null,
-      Mobile_Number: Mobile_Number || null,
-      Address: Address || null,
-      GST_Number: GST_Number || null,
+      Mobile: Mobile || null,
+      Outstanding_Balance: Outstanding_Balance ? parseFloat(Outstanding_Balance) : 0,
       is_deleted: false
     });
 
@@ -78,21 +78,26 @@ const createParty = async (req, res) => {
         Company_ID: party.Company_ID,
         Name: party.Name,
         Type: party.Type,
-        Email: party.Email,
-        Mobile_Number: party.Mobile_Number,
-        Address: party.Address,
-        GST_Number: party.GST_Number,
+        Mobile: party.Mobile,
+        Outstanding_Balance: parseFloat(party.Outstanding_Balance ?? 0),
+        is_deleted: party.is_deleted,
         createdAt: party.createdAt,
         updatedAt: party.updatedAt
       }
     });
   } catch (error) {
-    console.log("Error in createParty controller", error.message);
+    console.log("Error in createParty controller:", error.message);
 
     if (error.name === 'SequelizeValidationError') {
       return res.status(400).json({
         message: "Validation error",
         errors: error.errors.map(e => e.message)
+      });
+    }
+
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({
+        message: "A party with this name already exists"
       });
     }
 
@@ -130,25 +135,29 @@ const getAllParties = async (req, res) => {
       where.Type = type;
     }
 
-    // Search by name or email if provided
-    if (search) {
-      where[Op.or] = [
-        { Name: { [Op.iLike]: `%${search}%` } },
-        { Email: { [Op.iLike]: `%${search}%` } }
-      ];
+    // Search by name if provided
+    if (search && search.trim()) {
+      where.Name = { [Op.iLike]: `%${search.trim()}%` };
     }
 
     const parties = await Party.findAll({
       where,
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      attributes: ['Party_ID', 'Company_ID', 'Name', 'Type', 'Mobile', 'Outstanding_Balance', 'is_deleted', 'createdAt', 'updatedAt']
     });
 
+    // Convert Outstanding_Balance to number
+    const formattedParties = parties.map(party => ({
+      ...party.toJSON(),
+      Outstanding_Balance: parseFloat(party.Outstanding_Balance) || 0
+    }));
+
     res.json({
-      count: parties.length,
-      parties
+      count: formattedParties.length,
+      parties: formattedParties
     });
   } catch (error) {
-    console.log("Error in getAllParties controller", error.message);
+    console.log("Error in getAllParties controller:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -181,9 +190,12 @@ const getPartyById = async (req, res) => {
       return res.status(404).json({ message: "Party not found" });
     }
 
-    res.json(party);
+    res.json({
+      ...party.toJSON(),
+      Outstanding_Balance: parseFloat(party.Outstanding_Balance) || 0
+    });
   } catch (error) {
-    console.log("Error in getPartyById controller", error.message);
+    console.log("Error in getPartyById controller:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -193,7 +205,7 @@ const updateParty = async (req, res) => {
   try {
     const userId = req.user.User_ID;
     const { partyId } = req.params;
-    const { Name, Type, Email, Mobile_Number, Address, GST_Number } = req.body;
+    const { Name, Type, Mobile, Outstanding_Balance } = req.body;
 
     // Get user's company
     const company = await Company.findOne({
@@ -218,16 +230,18 @@ const updateParty = async (req, res) => {
     }
 
     // Validate and update name if provided
-    if (Name !== undefined) {
-      if (Name.length < 2 || Name.length > 100) {
+    if (Name !== undefined && Name !== null) {
+      if (Name.trim().length < 2 || Name.length > 100) {
         return res.status(400).json({ message: "Party name must be between 2 and 100 characters" });
       }
 
-      // Check if new name already exists for this company
+      // Check if new name already exists for this company (excluding current party)
       const nameExists = await Party.findOne({
         where: {
           Company_ID: company.Company_ID,
-          Name,
+          Name: {
+            [Op.iLike]: Name.trim()
+          },
           Party_ID: { [Op.ne]: partyId },
           is_deleted: false
         }
@@ -237,11 +251,11 @@ const updateParty = async (req, res) => {
         return res.status(400).json({ message: "Party with this name already exists for your company" });
       }
 
-      party.Name = Name;
+      party.Name = Name.trim();
     }
 
     // Validate and update type if provided
-    if (Type !== undefined) {
+    if (Type !== undefined && Type !== null) {
       const validTypes = ['Customer', 'Supplier', 'Both'];
       if (!validTypes.includes(Type)) {
         return res.status(400).json({ message: "Type must be 'Customer', 'Supplier', or 'Both'" });
@@ -249,54 +263,41 @@ const updateParty = async (req, res) => {
       party.Type = Type;
     }
 
-    // Validate and update email if provided
-    if (Email !== undefined) {
-      if (Email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(Email)) {
-          return res.status(400).json({ message: "Invalid email format" });
-        }
-      }
-      party.Email = Email || null;
-    }
-
     // Validate and update mobile number if provided
-    if (Mobile_Number !== undefined) {
-      if (Mobile_Number && (Mobile_Number.length < 10 || Mobile_Number.length > 20)) {
+    if (Mobile !== undefined) {
+      if (Mobile && (Mobile.length < 10 || Mobile.length > 20)) {
         return res.status(400).json({ message: "Mobile number must be between 10 and 20 characters" });
       }
-      party.Mobile_Number = Mobile_Number || null;
+      party.Mobile = Mobile || null;
     }
 
-    // Update address if provided
-    if (Address !== undefined) {
-      party.Address = Address || null;
-    }
-
-    // Update GST number if provided
-    if (GST_Number !== undefined) {
-      party.GST_Number = GST_Number || null;
+    // Validate and update outstanding balance if provided
+    if (Outstanding_Balance !== undefined && Outstanding_Balance !== null) {
+      const balance = parseFloat(Outstanding_Balance);
+      if (isNaN(balance) || balance < 0) {
+        return res.status(400).json({ message: "Outstanding balance must be a positive number" });
+      }
+      party.Outstanding_Balance = balance;
     }
 
     await party.save();
 
-    res.json({
+    res.status(200).json({
       message: "Party updated successfully",
       party: {
         Party_ID: party.Party_ID,
         Company_ID: party.Company_ID,
         Name: party.Name,
         Type: party.Type,
-        Email: party.Email,
-        Mobile_Number: party.Mobile_Number,
-        Address: party.Address,
-        GST_Number: party.GST_Number,
+        Mobile: party.Mobile,
+        Outstanding_Balance: parseFloat(party.Outstanding_Balance) || 0,
+        is_deleted: party.is_deleted,
         createdAt: party.createdAt,
         updatedAt: party.updatedAt
       }
     });
   } catch (error) {
-    console.log("Error in updateParty controller", error.message);
+    console.log("Error in updateParty controller:", error.message);
 
     if (error.name === 'SequelizeValidationError') {
       return res.status(400).json({
@@ -346,7 +347,7 @@ const deleteParty = async (req, res) => {
       Party_ID: party.Party_ID
     });
   } catch (error) {
-    console.log("Error in deleteParty controller", error.message);
+    console.log("Error in deleteParty controller:", error.message);
     res.status(500).json({ message: error.message });
   }
 };

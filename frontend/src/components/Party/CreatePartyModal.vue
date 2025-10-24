@@ -1,4 +1,4 @@
-<!-- CreatePartyModal.vue -->
+<!-- CreatePartyModal.vue - Updated -->
 <template>
   <div class="modal-overlay" @click.self="closeModal">
     <div class="modal-content">
@@ -60,6 +60,26 @@
           </span>
         </div>
 
+        <div class="form-group">
+          <label for="party-balance">Outstanding Balance</label>
+          <div class="input-with-currency">
+            <span class="currency-symbol">PKR</span>
+            <input
+              id="party-balance"
+              v-model.number="formData.Outstanding_Balance"
+              type="number"
+              placeholder="Enter outstanding balance"
+              :disabled="isSubmitting"
+              min="0"
+              step="0.01"
+            />
+          </div>
+          <span v-if="errors.Outstanding_Balance" class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ errors.Outstanding_Balance }}
+          </span>
+        </div>
+
         <div v-if="submitError" class="alert alert-error">
           <i class="fas fa-exclamation-circle"></i>
           <span>{{ submitError }}</span>
@@ -105,18 +125,21 @@ const formData = reactive({
   Name: '',
   Type: '',
   Mobile: '',
+  Outstanding_Balance: 0,
 });
 
 const errors = reactive({
   Name: '',
   Type: '',
   Mobile: '',
+  Outstanding_Balance: '',
 });
 
 const validateForm = (): boolean => {
   errors.Name = '';
   errors.Type = '';
   errors.Mobile = '';
+  errors.Outstanding_Balance = '';
 
   if (!formData.Name.trim()) {
     errors.Name = 'Party name is required';
@@ -130,6 +153,10 @@ const validateForm = (): boolean => {
 
   if (formData.Mobile && (formData.Mobile.length < 10 || formData.Mobile.length > 20)) {
     errors.Mobile = 'Phone number must be between 10 and 20 characters';
+  }
+
+  if (formData.Outstanding_Balance < 0) {
+    errors.Outstanding_Balance = 'Outstanding balance cannot be negative';
   }
 
   return Object.values(errors).every(error => !error);
@@ -149,6 +176,7 @@ const handleSubmit = async () => {
       Name: formData.Name.trim(),
       Type: formData.Type as 'Customer' | 'Supplier' | 'Both',
       Mobile: formData.Mobile?.trim() || undefined,
+      Outstanding_Balance: formData.Outstanding_Balance || 0,
     });
 
     emit('success');
@@ -167,6 +195,25 @@ const closeModal = () => {
 </script>
 
 <style scoped lang="scss">
+.input-with-currency {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .currency-symbol {
+    position: absolute;
+    left: 0.75rem;
+    color: #718096;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  input {
+    padding-left: 3.5rem;
+  }
+}
+
+// Include all the styles from CreatePartyModal.vue
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -181,34 +228,16 @@ const closeModal = () => {
   animation: fadeIn 0.3s ease;
   padding: 1rem;
   overflow-y: auto;
-
-  @media (max-width: 640px) {
-    padding: 0.75rem;
-  }
-
-  @media (max-width: 480px) {
-    padding: 0.5rem;
-    align-items: flex-end;
-    animation: slideUp 0.3s ease;
-  }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 .modal-content {
@@ -222,27 +251,11 @@ const closeModal = () => {
   animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-
-  @media (max-width: 480px) {
-    border-radius: 12px 12px 0 0;
-    max-height: calc(100vh - 60px);
-    width: 100%;
-  }
-
-  @media (max-width: 360px) {
-    border-radius: 8px 8px 0 0;
-  }
 }
 
 @keyframes modalSlideIn {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .modal-header {
@@ -253,27 +266,11 @@ const closeModal = () => {
   border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
 
-  @media (max-width: 640px) {
-    padding: 1.25rem;
-  }
-
-  @media (max-width: 480px) {
-    padding: 1rem;
-  }
-
   h2 {
     margin: 0;
     font-size: 1.3rem;
     font-weight: 700;
     color: #1a202c;
-
-    @media (max-width: 640px) {
-      font-size: 1.15rem;
-    }
-
-    @media (max-width: 480px) {
-      font-size: 1.1rem;
-    }
   }
 
   .btn-close {
@@ -297,10 +294,6 @@ const closeModal = () => {
       color: #2d3748;
       background: #f7fafc;
     }
-
-    &:active {
-      transform: scale(0.95);
-    }
   }
 }
 
@@ -308,22 +301,10 @@ const closeModal = () => {
   padding: 1.5rem;
   flex: 1;
   overflow-y: auto;
-
-  @media (max-width: 640px) {
-    padding: 1.25rem;
-  }
-
-  @media (max-width: 480px) {
-    padding: 1rem;
-  }
 }
 
 .form-group {
   margin-bottom: 1.5rem;
-
-  @media (max-width: 480px) {
-    margin-bottom: 1.25rem;
-  }
 
   label {
     display: block;
@@ -331,10 +312,6 @@ const closeModal = () => {
     color: #2d3748;
     font-weight: 600;
     font-size: 0.95rem;
-
-    @media (max-width: 480px) {
-      font-size: 0.9rem;
-    }
 
     .required {
       color: #f56565;
@@ -351,11 +328,6 @@ const closeModal = () => {
     font-family: inherit;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     box-sizing: border-box;
-
-    @media (max-width: 480px) {
-      padding: 0.65rem;
-      font-size: 0.95rem;
-    }
 
     &:focus {
       outline: none;
@@ -390,11 +362,6 @@ const closeModal = () => {
     font-size: 0.85rem;
     margin-top: 0.5rem;
 
-    @media (max-width: 480px) {
-      font-size: 0.8rem;
-      gap: 0.4rem;
-    }
-
     i {
       font-size: 0.75rem;
       flex-shrink: 0;
@@ -410,12 +377,6 @@ const closeModal = () => {
   align-items: center;
   gap: 0.75rem;
 
-  @media (max-width: 480px) {
-    padding: 0.85rem;
-    margin-bottom: 1.25rem;
-    gap: 0.6rem;
-  }
-
   &.alert-error {
     background-color: #fed7d7;
     color: #c53030;
@@ -428,10 +389,6 @@ const closeModal = () => {
 
     span {
       font-size: 0.95rem;
-
-      @media (max-width: 480px) {
-        font-size: 0.9rem;
-      }
     }
   }
 }
@@ -444,21 +401,6 @@ const closeModal = () => {
   border-top: 1px solid #e2e8f0;
   background-color: #f7fafc;
   flex-shrink: 0;
-
-  @media (max-width: 640px) {
-    padding: 1.25rem;
-    gap: 0.75rem;
-  }
-
-  @media (max-width: 480px) {
-    padding: 1rem;
-    gap: 0.6rem;
-    flex-direction: column-reverse;
-
-    .btn {
-      width: 100%;
-    }
-  }
 }
 
 .btn {
@@ -475,16 +417,6 @@ const closeModal = () => {
   font-size: 1rem;
   white-space: nowrap;
 
-  @media (max-width: 640px) {
-    padding: 0.65rem 1.25rem;
-    font-size: 0.95rem;
-  }
-
-  @media (max-width: 480px) {
-    padding: 0.65rem 1rem;
-    font-size: 0.9rem;
-  }
-
   &.btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -492,10 +424,6 @@ const closeModal = () => {
     &:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-
-    &:active:not(:disabled) {
-      transform: translateY(0);
     }
   }
 
@@ -506,10 +434,6 @@ const closeModal = () => {
 
     &:hover:not(:disabled) {
       background: #e2e8f0;
-    }
-
-    &:active:not(:disabled) {
-      background: #cbd5e0;
     }
   }
 
@@ -527,37 +451,11 @@ const closeModal = () => {
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-
-  @media (max-width: 480px) {
-    width: 12px;
-    height: 12px;
-    border-width: 1.5px;
-  }
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-// Scrollbar Styling
-.modal-form::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modal-form::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.modal-form::-webkit-scrollbar-thumb {
-  background: rgba(160, 174, 192, 0.3);
-  border-radius: 3px;
-
-  &:hover {
-    background: rgba(160, 174, 192, 0.5);
-  }
+  to { transform: rotate(360deg); }
 }
 </style>
 
-
+---

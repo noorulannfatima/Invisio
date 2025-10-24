@@ -331,6 +331,7 @@ const formatCurrency = (amount: number): string => {
 // Header
 .parties-header {
   margin-bottom: 2rem;
+  margin-top: 4rem;
 
   .header-content {
     display: flex;

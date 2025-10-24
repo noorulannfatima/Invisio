@@ -76,6 +76,7 @@ export const usePartyStore = defineStore('party', () => {
     Name: string;
     Type: 'Customer' | 'Supplier' | 'Both';
     Mobile?: string;
+    Outstanding_Balance?: number;
   }) => {
     isLoading.value = true;
     error.value = null;
@@ -142,6 +143,7 @@ export const usePartyStore = defineStore('party', () => {
       Name?: string;
       Type?: 'Customer' | 'Supplier' | 'Both';
       Mobile?: string | null;
+      Outstanding_Balance?: number;
     }
   ) => {
     isLoading.value = true;
