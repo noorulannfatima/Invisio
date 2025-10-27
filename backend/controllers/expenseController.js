@@ -1,5 +1,4 @@
 // controllers/expenseController.js
-// controllers/expenseController.js
 const { Company, Party, Expense } = require('../models');
 const { Op } = require('sequelize');
 
@@ -51,7 +50,7 @@ const createExpense = async (req, res) => {
     const expense = await Expense.create({
       Company_ID: company.Company_ID,
       Party_ID: Party_ID || null,
-      Date: Date || new Date().toISOString().split('T')[0],
+      Expense_Date: Date || new Date().toISOString().split('T')[0],
       Category,
       Amount: parseFloat(Amount),
       Description: Description || null,
@@ -59,19 +58,36 @@ const createExpense = async (req, res) => {
       Is_Deleted: false
     });
 
+    // Fetch the created expense with vendor details
+    const expenseWithVendor = await Expense.findOne({
+      where: { Expense_ID: expense.Expense_ID },
+      include: [
+        {
+          model: Party,
+          as: 'Vendor',
+          attributes: ['Party_ID', 'Name', 'Mobile'],
+          required: false
+        }
+      ]
+    });
+
     res.status(201).json({
       message: "Expense created successfully",
       expense: {
-        Expense_ID: expense.Expense_ID,
-        Company_ID: expense.Company_ID,
-        Party_ID: expense.Party_ID,
-        Party_Name: party ? party.Name : null,
-        Date: expense.Date,
-        Category: expense.Category,
-        Amount: parseFloat(expense.Amount),
-        Description: expense.Description,
-        Payment_Mode: expense.Payment_Mode,
-        createdAt: expense.createdAt
+        Expense_ID: expenseWithVendor.Expense_ID,
+        Company_ID: expenseWithVendor.Company_ID,
+        Party_ID: expenseWithVendor.Party_ID,
+        Date: expenseWithVendor.Expense_Date,
+        Category: expenseWithVendor.Category,
+        Amount: parseFloat(expenseWithVendor.Amount),
+        Description: expenseWithVendor.Description,
+        Payment_Mode: expenseWithVendor.Payment_Mode,
+        Vendor: expenseWithVendor.Vendor ? {
+          Party_ID: expenseWithVendor.Vendor.Party_ID,
+          Name: expenseWithVendor.Vendor.Name,
+          Mobile: expenseWithVendor.Vendor.Mobile
+        } : null,
+        createdAt: expenseWithVendor.createdAt
       }
     });
   } catch (error) {
@@ -111,9 +127,9 @@ const getAllExpenses = async (req, res) => {
 
     // Filter by date range
     if (startDate || endDate) {
-      where.Date = {};
-      if (startDate) where.Date[Op.gte] = startDate;
-      if (endDate) where.Date[Op.lte] = endDate;
+      where.Expense_Date = {};
+      if (startDate) where.Expense_Date[Op.gte] = startDate;
+      if (endDate) where.Expense_Date[Op.lte] = endDate;
     }
 
     // Filter by category
@@ -132,15 +148,17 @@ const getAllExpenses = async (req, res) => {
     }
 
     // Determine sort order
-    let order = [['Date', 'DESC']];
+    let order = [['Expense_Date', 'DESC']];
     if (sortBy === 'amount-high') {
       order = [['Amount', 'DESC']];
     } else if (sortBy === 'amount-low') {
       order = [['Amount', 'ASC']];
     } else if (sortBy === 'oldest') {
-      order = [['Date', 'ASC']];
+      order = [['Expense_Date', 'ASC']];
     } else if (sortBy === 'category') {
       order = [['Category', 'ASC']];
+    } else if (sortBy === 'newest') {
+      order = [['Expense_Date', 'DESC']];
     }
 
     const expenses = await Expense.findAll({
@@ -149,7 +167,7 @@ const getAllExpenses = async (req, res) => {
         {
           model: Party,
           as: 'Vendor',
-          attributes: ['Party_ID', 'Name'],
+          attributes: ['Party_ID', 'Name', 'Mobile'],
           required: false
         }
       ],
@@ -160,14 +178,17 @@ const getAllExpenses = async (req, res) => {
       count: expenses.length,
       expenses: expenses.map(exp => ({
         Expense_ID: exp.Expense_ID,
-        Date: exp.Date,
+        Company_ID: exp.Company_ID,
+        Party_ID: exp.Party_ID,
+        Date: exp.Expense_Date,
         Category: exp.Category,
         Amount: parseFloat(exp.Amount),
         Description: exp.Description,
         Payment_Mode: exp.Payment_Mode,
         Vendor: exp.Vendor ? {
           Party_ID: exp.Vendor.Party_ID,
-          Name: exp.Vendor.Name
+          Name: exp.Vendor.Name,
+          Mobile: exp.Vendor.Mobile
         } : null,
         createdAt: exp.createdAt
       }))
@@ -204,7 +225,8 @@ const getExpenseById = async (req, res) => {
         {
           model: Party,
           as: 'Vendor',
-          attributes: ['Party_ID', 'Name', 'Email', 'Mobile_Number', 'Address']
+          attributes: ['Party_ID', 'Name', 'Mobile'],
+          required: false
         }
       ]
     });
@@ -216,12 +238,17 @@ const getExpenseById = async (req, res) => {
     res.json({
       Expense_ID: expense.Expense_ID,
       Company_ID: expense.Company_ID,
-      Date: expense.Date,
+      Party_ID: expense.Party_ID,
+      Date: expense.Expense_Date,
       Category: expense.Category,
       Amount: parseFloat(expense.Amount),
       Description: expense.Description,
       Payment_Mode: expense.Payment_Mode,
-      Vendor: expense.Vendor || null,
+      Vendor: expense.Vendor ? {
+        Party_ID: expense.Vendor.Party_ID,
+        Name: expense.Vendor.Name,
+        Mobile: expense.Vendor.Mobile
+      } : null,
       createdAt: expense.createdAt,
       updatedAt: expense.updatedAt
     });
@@ -268,7 +295,7 @@ const getExpensesReport = async (req, res) => {
       where: {
         Company_ID: company.Company_ID,
         Is_Deleted: false,
-        Date: {
+        Expense_Date: {
           [Op.gte]: startOfMonth,
           [Op.lte]: endOfMonth
         }
@@ -344,9 +371,9 @@ const getExpensesByCategory = async (req, res) => {
     };
 
     if (startDate || endDate) {
-      where.Date = {};
-      if (startDate) where.Date[Op.gte] = startDate;
-      if (endDate) where.Date[Op.lte] = endDate;
+      where.Expense_Date = {};
+      if (startDate) where.Expense_Date[Op.gte] = startDate;
+      if (endDate) where.Expense_Date[Op.lte] = endDate;
     }
 
     // Fetch all expenses for the period
@@ -444,17 +471,35 @@ const assignExpenseToVendor = async (req, res) => {
     expense.Party_ID = Party_ID;
     await expense.save();
 
+    // Fetch the updated expense with vendor details
+    const updatedExpense = await Expense.findOne({
+      where: { Expense_ID: expense.Expense_ID },
+      include: [
+        {
+          model: Party,
+          as: 'Vendor',
+          attributes: ['Party_ID', 'Name', 'Mobile'],
+          required: false
+        }
+      ]
+    });
+
     res.json({
       message: "Expense assigned to vendor successfully",
       expense: {
-        Expense_ID: expense.Expense_ID,
-        Category: expense.Category,
-        Amount: parseFloat(expense.Amount),
-        Date: expense.Date,
-        Vendor: {
-          Party_ID: party.Party_ID,
-          Name: party.Name
-        }
+        Expense_ID: updatedExpense.Expense_ID,
+        Company_ID: updatedExpense.Company_ID,
+        Party_ID: updatedExpense.Party_ID,
+        Date: updatedExpense.Expense_Date,
+        Category: updatedExpense.Category,
+        Amount: parseFloat(updatedExpense.Amount),
+        Description: updatedExpense.Description,
+        Payment_Mode: updatedExpense.Payment_Mode,
+        Vendor: updatedExpense.Vendor ? {
+          Party_ID: updatedExpense.Vendor.Party_ID,
+          Name: updatedExpense.Vendor.Name,
+          Mobile: updatedExpense.Vendor.Mobile
+        } : null
       }
     });
   } catch (error) {
@@ -494,7 +539,7 @@ const updateExpense = async (req, res) => {
 
     // Update fields if provided
     if (Date !== undefined) {
-      expense.Date = Date;
+      expense.Expense_Date = Date;
     }
 
     if (Category !== undefined) {
@@ -534,18 +579,36 @@ const updateExpense = async (req, res) => {
 
     await expense.save();
 
+    // Fetch the updated expense with vendor details
+    const updatedExpense = await Expense.findOne({
+      where: { Expense_ID: expense.Expense_ID },
+      include: [
+        {
+          model: Party,
+          as: 'Vendor',
+          attributes: ['Party_ID', 'Name', 'Mobile'],
+          required: false
+        }
+      ]
+    });
+
     res.json({
       message: "Expense updated successfully",
       expense: {
-        Expense_ID: expense.Expense_ID,
-        Company_ID: expense.Company_ID,
-        Party_ID: expense.Party_ID,
-        Date: expense.Date,
-        Category: expense.Category,
-        Amount: parseFloat(expense.Amount),
-        Description: expense.Description,
-        Payment_Mode: expense.Payment_Mode,
-        updatedAt: expense.updatedAt
+        Expense_ID: updatedExpense.Expense_ID,
+        Company_ID: updatedExpense.Company_ID,
+        Party_ID: updatedExpense.Party_ID,
+        Date: updatedExpense.Expense_Date,
+        Category: updatedExpense.Category,
+        Amount: parseFloat(updatedExpense.Amount),
+        Description: updatedExpense.Description,
+        Payment_Mode: updatedExpense.Payment_Mode,
+        Vendor: updatedExpense.Vendor ? {
+          Party_ID: updatedExpense.Vendor.Party_ID,
+          Name: updatedExpense.Vendor.Name,
+          Mobile: updatedExpense.Vendor.Mobile
+        } : null,
+        updatedAt: updatedExpense.updatedAt
       }
     });
   } catch (error) {

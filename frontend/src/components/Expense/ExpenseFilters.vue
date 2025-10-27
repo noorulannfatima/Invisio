@@ -15,7 +15,7 @@
           :value="filters.startDate"
           type="date"
           class="filter-input"
-          @input="updateFilter('startDate', $event.target.value)"
+          @input="updateFilter('startDate', ($event.target as HTMLInputElement).value)"
         />
       </div>
 
@@ -25,7 +25,7 @@
           :value="filters.endDate"
           type="date"
           class="filter-input"
-          @input="updateFilter('endDate', $event.target.value)"
+          @input="updateFilter('endDate', ($event.target as HTMLInputElement).value)"
         />
       </div>
 
@@ -36,7 +36,7 @@
           type="text"
           placeholder="Search category..."
           class="filter-input"
-          @input="updateFilter('Category', $event.target.value)"
+          @input="updateFilter('Category', ($event.target as HTMLInputElement).value)"
         />
       </div>
 
@@ -45,7 +45,7 @@
         <select
           :value="filters.sortBy"
           class="filter-input"
-          @input="updateFilter('sortBy', $event.target.value)"
+          @input="updateFilter('sortBy', ($event.target as HTMLSelectElement).value)"
         >
           <option value="">Default</option>
           <option value="newest">Newest First</option>
@@ -71,22 +71,26 @@
 </template>
 
 <script setup lang="ts">
+import { defineProps, defineEmits } from 'vue';
+
+interface FilterState {
+  startDate: string;
+  endDate: string;
+  Category: string;
+  sortBy: string;
+}
+
 const props = defineProps<{
-  filters: {
-    startDate: string;
-    endDate: string;
-    Category: string;
-    sortBy: string;
-  };
+  filters: FilterState;
 }>();
 
 const emit = defineEmits<{
-  'update-filters': [filters: any];
+  'update-filters': [filters: FilterState];
   'apply': [];
   'clear': [];
 }>();
 
-const updateFilter = (key: string, value: string) => {
+const updateFilter = (key: keyof FilterState, value: string) => {
   const newFilters = { ...props.filters, [key]: value };
   emit('update-filters', newFilters);
 };
@@ -177,7 +181,7 @@ const handleClear = () => {
 
   .btn-primary,
   .btn-secondary {
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1rem;
     border: none;
     border-radius: 8px;
     cursor: pointer;

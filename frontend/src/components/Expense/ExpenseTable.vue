@@ -36,22 +36,15 @@
               <span v-else class="text-muted">—</span>
             </td>
             <td>
-              <span v-if="expense.Vendor" class="vendor-name">
+              <span v-if="expense.Party_ID && expense.Vendor" class="vendor-name">
                 {{ expense.Vendor.Name }}
               </span>
-              <span v-else class="text-muted">—</span>
+              <span v-else class="text-muted-error">No Vendor</span>
             </td>
             <td class="description-cell">
               {{ expense.Description || '—' }}
             </td>
             <td class="actions-cell">
-              <button
-                class="btn-action view"
-                title="View Details"
-                @click="$emit('view', expense.Expense_ID)"
-              >
-                <i class="fas fa-eye"></i>
-              </button>
               <button
                 class="btn-action edit"
                 title="Edit"
@@ -86,25 +79,33 @@ import { useExpenseStore } from '@/store/expenseStore';
 const expenseStore = useExpenseStore();
 
 defineEmits<{
-  view: [expenseId: number];
   edit: [expenseId: number];
   delete: [expenseId: number];
 }>();
 
-const formatCurrency = (amount: number) => {
-  return amount.toFixed(2);
+const formatCurrency = (amount: number): string => {
+  return (amount ?? 0).toFixed(2);
 };
 
-const formatDate = (date: string) => {
+const formatDate = (date: string | Date | undefined | null): string => {
   if (!date) return '—';
-  return new Date(date).toLocaleDateString('en-IN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return '—';
+    
+    return dateObj.toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch {
+    return '—';
+  }
 };
 
-const getCategoryClass = (category: string) => {
+const getCategoryClass = (category: string | undefined): string => {
+  if (!category) return 'category-default';
+  
   const categoryMap: { [key: string]: string } = {
     rent: 'category-rent',
     utilities: 'category-utilities',
@@ -116,7 +117,9 @@ const getCategoryClass = (category: string) => {
   return categoryMap[category.toLowerCase()] || 'category-default';
 };
 
-const getPaymentIcon = (mode: string) => {
+const getPaymentIcon = (mode: string | undefined): string => {
+  if (!mode) return 'fas fa-wallet';
+  
   const iconMap: { [key: string]: string } = {
     cash: 'fas fa-money-bill',
     'bank transfer': 'fas fa-university',
@@ -183,6 +186,7 @@ const getPaymentIcon = (mode: string) => {
   gap: 0.5rem;
   font-weight: 500;
   color: #4a5568;
+  white-space: nowrap;
 
   i {
     color: #667eea;
@@ -207,6 +211,7 @@ const getPaymentIcon = (mode: string) => {
     border-radius: 6px;
     font-size: 0.85rem;
     font-weight: 500;
+    white-space: nowrap;
 
     i {
       font-size: 0.8rem;
@@ -240,6 +245,16 @@ const getPaymentIcon = (mode: string) => {
   font-weight: 500;
 }
 
+.text-muted-error {
+  color: #f56565;
+  font-weight: 600;
+  background: rgba(245, 101, 101, 0.05);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  display: inline-block;
+  font-size: 0.85rem;
+}
+
 .badge {
   display: inline-block;
   padding: 0.4rem 0.8rem;
@@ -247,6 +262,7 @@ const getPaymentIcon = (mode: string) => {
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: capitalize;
+  white-space: nowrap;
 
   &.category-rent {
     background: #fff5f5;
@@ -288,6 +304,7 @@ const getPaymentIcon = (mode: string) => {
   display: flex;
   gap: 0.5rem;
   justify-content: center;
+  white-space: nowrap;
 }
 
 .btn-action {
@@ -305,16 +322,6 @@ const getPaymentIcon = (mode: string) => {
 
   &:hover {
     transform: translateY(-2px);
-  }
-
-  &.view {
-    color: #667eea;
-    border-color: #667eea;
-
-    &:hover {
-      background: rgba(102, 126, 234, 0.1);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-    }
   }
 
   &.edit {

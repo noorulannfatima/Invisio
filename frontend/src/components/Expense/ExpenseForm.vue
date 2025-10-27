@@ -23,7 +23,7 @@
           </div>
 
           <div class="form-group">
-            <label for="category">Category *</label>
+            <label for="category">Category <span class="required">*</span></label>
             <input
               id="category"
               v-model="formState.Category"
@@ -37,9 +37,9 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="amount">Amount *</label>
+            <label for="amount">Amount <span class="required">*</span></label>
             <div class="amount-wrapper">
-              <span class="currency">₹</span>
+              <span class="currency">Rs</span>
               <input
                 id="amount"
                 v-model.number="formState.Amount"
@@ -67,13 +67,19 @@
         </div>
 
         <div class="form-group">
-          <label for="vendor">Vendor (Optional)</label>
-          <select v-model.number="formState.Party_ID" id="vendor" class="form-input">
-            <option :value="null">Select Vendor</option>
+          <label for="vendor">Vendor <span class="required">*</span></label>
+          <select 
+            v-model.number="formState.Party_ID" 
+            id="vendor" 
+            class="form-input"
+            required
+          >
+            <option :value="null" disabled>Select Vendor</option>
             <option v-for="vendor in vendors" :key="vendor.Party_ID" :value="vendor.Party_ID">
               {{ vendor.Name }}
             </option>
           </select>
+          <span v-if="!formState.Party_ID" class="error-hint">Vendor is required</span>
         </div>
 
         <div class="form-group">
@@ -95,7 +101,7 @@
           <button
             type="submit"
             class="btn-primary"
-            :disabled="!formState.Category || formState.Amount <= 0"
+            :disabled="!isFormValid"
           >
             <i :class="editingId ? 'fas fa-save' : 'fas fa-plus'"></i>
             {{ editingId ? 'Update Expense' : 'Create Expense' }}
@@ -110,35 +116,46 @@
 import { ref, watch, computed } from 'vue';
 import { usePartyStore } from '@/store/partyStore';
 
+interface ExpenseFormState {
+  Date: string;
+  Category: string;
+  Amount: number;
+  Description: string;
+  Payment_Mode: string;
+  Party_ID: number | null;
+}
+
 const props = defineProps<{
   editingId: number | null;
-  initialData: {
-    Date: string;
-    Category: string;
-    Amount: number;
-    Description: string;
-    Payment_Mode: string;
-    Party_ID: number | null;
-  };
+  initialData: ExpenseFormState;
 }>();
 
 const emit = defineEmits<{
-  save: [data: any];
+  save: [data: ExpenseFormState];
   close: [];
 }>();
 
 const partyStore = usePartyStore();
 
-const formState = ref({ ...props.initialData });
+const formState = ref<ExpenseFormState>({ ...props.initialData });
 
-const vendors = computed(() => partyStore.parties);
+const vendors = computed(() => partyStore.parties || []);
+
+const isFormValid = computed(() => {
+  return (
+    formState.value.Category?.trim().length > 0 &&
+    (formState.value.Amount ?? 0) > 0 &&
+    formState.value.Party_ID !== null &&
+    formState.value.Party_ID !== undefined
+  );
+});
 
 watch(() => props.initialData, (newData) => {
   formState.value = { ...newData };
 }, { deep: true });
 
 const handleSubmit = () => {
-  if (!formState.value.Category || formState.value.Amount <= 0) {
+  if (!isFormValid.value) {
     return;
   }
   emit('save', formState.value);
@@ -223,6 +240,7 @@ const closeModal = () => {
     color: #a0aec0;
     line-height: 1;
     transition: color 0.3s ease;
+    padding: 0;
 
     &:hover {
       color: #2d3748;
@@ -250,6 +268,11 @@ const closeModal = () => {
     font-size: 0.9rem;
     font-weight: 600;
     color: #2d3748;
+
+    .required {
+      color: #f56565;
+      margin-left: 0.25rem;
+    }
   }
 }
 
@@ -271,7 +294,13 @@ const closeModal = () => {
   }
 
   &::placeholder {
+    color: #bbc6de;
+  }
+
+  &:disabled {
+    background: #f7fafc;
     color: #a0aec0;
+    cursor: not-allowed;
   }
 }
 
@@ -288,15 +317,23 @@ const closeModal = () => {
   .currency {
     position: absolute;
     left: 1rem;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: #667eea;
+    color: #717481;
     pointer-events: none;
   }
 
   .form-input {
-    padding-left: 2rem;
+    padding-left: 2.5rem;
+    padding-right: 1rem;
   }
+}
+
+.error-hint {
+  font-size: 0.8rem;
+  color: #f56565;
+  font-weight: 500;
+  margin-top: 0.25rem;
 }
 
 .form-footer {
@@ -333,6 +370,7 @@ const closeModal = () => {
   &:disabled {
     background: #cbd5e0;
     cursor: not-allowed;
+    transform: none;
   }
 }
 

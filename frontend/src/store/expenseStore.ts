@@ -4,9 +4,7 @@ import { ref, computed } from 'vue';
 export interface Vendor {
   Party_ID: number;
   Name: string;
-  Email?: string;
-  Mobile_Number?: string;
-  Address?: string;
+  Mobile?: string;
 }
 
 export interface Expense {
@@ -150,7 +148,28 @@ export const useExpenseStore = defineStore('expense', () => {
 
     try {
       const response = await apiCall('/expense/create', 'POST', expenseData);
-      expenses.value.push(response.expense);
+      
+      // Map response fields to match Expense interface
+      const mappedVendor: Vendor | null = response.expense.Vendor ? {
+        Party_ID: response.expense.Vendor.Party_ID,
+        Name: response.expense.Vendor.Name,
+        Mobile: response.expense.Vendor.Mobile
+      } : null;
+
+      const expense: Expense = {
+        Expense_ID: response.expense.Expense_ID,
+        Company_ID: response.expense.Company_ID,
+        Party_ID: response.expense.Party_ID,
+        Date: response.expense.Date || response.expense.Expense_Date,
+        Category: response.expense.Category,
+        Amount: response.expense.Amount,
+        Description: response.expense.Description,
+        Payment_Mode: response.expense.Payment_Mode,
+        Vendor: mappedVendor,
+        createdAt: response.expense.createdAt
+      };
+      
+      expenses.value.push(expense);
       return response;
     } finally {
       isLoading.value = false;
@@ -182,7 +201,29 @@ export const useExpenseStore = defineStore('expense', () => {
       }
 
       const response = await apiCall(endpoint, 'GET');
-      expenses.value = response.expenses || [];
+      
+      // Map response expenses to match Expense interface
+      expenses.value = (response.expenses || []).map((exp: any) => {
+        const mappedVendor: Vendor | null = exp.Vendor ? {
+          Party_ID: exp.Vendor.Party_ID,
+          Name: exp.Vendor.Name,
+          Mobile: exp.Vendor.Mobile
+        } : null;
+
+        return {
+          Expense_ID: exp.Expense_ID,
+          Company_ID: exp.Company_ID,
+          Party_ID: exp.Party_ID,
+          Date: exp.Date || exp.Expense_Date,
+          Category: exp.Category,
+          Amount: exp.Amount,
+          Description: exp.Description,
+          Payment_Mode: exp.Payment_Mode,
+          Vendor: mappedVendor,
+          createdAt: exp.createdAt
+        };
+      });
+      
       return response;
     } finally {
       isLoading.value = false;
@@ -198,8 +239,29 @@ export const useExpenseStore = defineStore('expense', () => {
 
     try {
       const response = await apiCall(`/expense/${expenseId}`, 'GET');
-      currentExpense.value = response;
-      return response;
+      
+      // Map response to Expense interface
+      const mappedVendor: Vendor | null = response.Vendor ? {
+        Party_ID: response.Vendor.Party_ID,
+        Name: response.Vendor.Name,
+        Mobile: response.Vendor.Mobile
+      } : null;
+
+      currentExpense.value = {
+        Expense_ID: response.Expense_ID,
+        Company_ID: response.Company_ID,
+        Party_ID: response.Party_ID,
+        Date: response.Date || response.Expense_Date,
+        Category: response.Category,
+        Amount: response.Amount,
+        Description: response.Description,
+        Payment_Mode: response.Payment_Mode,
+        Vendor: mappedVendor,
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt
+      };
+      
+      return currentExpense.value;
     } finally {
       isLoading.value = false;
     }
@@ -271,15 +333,32 @@ export const useExpenseStore = defineStore('expense', () => {
         { Party_ID: partyId }
       );
 
-      // Update in expenses array
+      // Map and update in expenses array
+      const mappedVendor: Vendor | null = response.expense.Vendor ? {
+        Party_ID: response.expense.Vendor.Party_ID,
+        Name: response.expense.Vendor.Name,
+        Mobile: response.expense.Vendor.Mobile
+      } : null;
+
+      const mappedExpense: Expense = {
+        Expense_ID: response.expense.Expense_ID,
+        Company_ID: response.expense.Company_ID,
+        Party_ID: response.expense.Party_ID,
+        Date: response.expense.Date || response.expense.Expense_Date,
+        Category: response.expense.Category,
+        Amount: response.expense.Amount,
+        Description: response.expense.Description,
+        Payment_Mode: response.expense.Payment_Mode,
+        Vendor: mappedVendor
+      };
+
       const index = expenses.value.findIndex(exp => exp.Expense_ID === expenseId);
       if (index !== -1) {
-        expenses.value[index] = response.expense;
+        expenses.value[index] = mappedExpense;
       }
 
-      // Update current expense if it's the same
       if (currentExpense.value?.Expense_ID === expenseId) {
-        currentExpense.value = response.expense;
+        currentExpense.value = mappedExpense;
       }
 
       return response;
@@ -312,15 +391,32 @@ export const useExpenseStore = defineStore('expense', () => {
         expenseData
       );
 
-      // Update in expenses array
+      // Map and update in expenses array
+      const mappedVendor: Vendor | null = response.expense.Vendor ? {
+        Party_ID: response.expense.Vendor.Party_ID,
+        Name: response.expense.Vendor.Name,
+        Mobile: response.expense.Vendor.Mobile
+      } : null;
+
+      const mappedExpense: Expense = {
+        Expense_ID: response.expense.Expense_ID,
+        Company_ID: response.expense.Company_ID,
+        Party_ID: response.expense.Party_ID,
+        Date: response.expense.Date || response.expense.Expense_Date,
+        Category: response.expense.Category,
+        Amount: response.expense.Amount,
+        Description: response.expense.Description,
+        Payment_Mode: response.expense.Payment_Mode,
+        Vendor: mappedVendor
+      };
+
       const index = expenses.value.findIndex(exp => exp.Expense_ID === expenseId);
       if (index !== -1) {
-        expenses.value[index] = response.expense;
+        expenses.value[index] = mappedExpense;
       }
 
-      // Update current expense if it's the same
       if (currentExpense.value?.Expense_ID === expenseId) {
-        currentExpense.value = response.expense;
+        currentExpense.value = mappedExpense;
       }
 
       return response;
@@ -339,10 +435,8 @@ export const useExpenseStore = defineStore('expense', () => {
     try {
       const response = await apiCall(`/expense/${expenseId}`, 'DELETE');
 
-      // Remove from expenses array
       expenses.value = expenses.value.filter(exp => exp.Expense_ID !== expenseId);
 
-      // Clear current expense if it's the same
       if (currentExpense.value?.Expense_ID === expenseId) {
         currentExpense.value = null;
       }

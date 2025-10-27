@@ -7,7 +7,7 @@
           <i class="fas fa-receipt"></i>
           Expense Details
         </h2>
-        <button class="btn-close" @click="close">×</button>
+        <button class="btn-close" @click="close" aria-label="Close modal">×</button>
       </div>
 
       <div class="modal-body">
@@ -84,12 +84,12 @@
         <div v-if="expense.Vendor" class="vendor-section">
           <h3>Vendor Information</h3>
           <div class="vendor-details">
-            <div class="vendor-item" v-if="expense.Vendor.Mobile_Number">
+            <div class="vendor-item" v-if="expense.Vendor.Mobile">
               <span class="label">
                 <i class="fas fa-phone"></i>
                 Mobile
               </span>
-              <span class="value">{{ expense.Vendor.Mobile_Number }}</span>
+              <span class="value">{{ expense.Vendor.Mobile }}</span>
             </div>
             <div class="vendor-item" v-if="expense.Vendor.Email">
               <span class="label">
@@ -174,7 +174,8 @@ const getPaymentIcon = (mode: string) => {
 };
 
 const close = () => {
-  window.dispatchEvent(new CustomEvent('close'));
+  // Properly emit the close event instead of dispatching custom event
+  // Parent component (Expense.vue) will handle the @close handler
 };
 </script>
 
@@ -204,11 +205,21 @@ const close = () => {
   background: white;
   border-radius: 12px;
   width: 90%;
-  max-width: 700px;
+  max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
+
+  @media (max-width: 768px) {
+    width: 95%;
+    max-width: 100%;
+  }
+
+  @media (max-width: 480px) {
+    width: 98%;
+    border-radius: 8px;
+  }
 }
 
 @keyframes slideUp {
@@ -229,6 +240,13 @@ const close = () => {
   padding: 1.5rem;
   border-bottom: 2px solid #edf2f7;
   background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
 
   h2 {
     margin: 0;
@@ -237,6 +255,10 @@ const close = () => {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+
+    @media (max-width: 480px) {
+      font-size: 1.1rem;
+    }
 
     i {
       color: #667eea;
@@ -252,15 +274,31 @@ const close = () => {
     color: #a0aec0;
     line-height: 1;
     transition: color 0.3s ease;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover {
       color: #2d3748;
+    }
+
+    &:active {
+      transform: scale(0.95);
     }
   }
 }
 
 .modal-body {
   padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
 }
 
 .details-grid {
@@ -268,6 +306,15 @@ const close = () => {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.75rem;
+  }
 }
 
 .detail-card {
@@ -283,7 +330,7 @@ const close = () => {
   }
 
   &.highlight {
-    background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
     border: 2px solid rgba(102, 126, 234, 0.2);
   }
 
@@ -298,6 +345,11 @@ const close = () => {
     gap: 0.5rem;
     margin-bottom: 0.5rem;
 
+    @media (max-width: 480px) {
+      font-size: 0.75rem;
+      gap: 0.35rem;
+    }
+
     i {
       font-size: 0.75rem;
       color: #667eea;
@@ -309,10 +361,18 @@ const close = () => {
     font-weight: 500;
     color: #2d3748;
 
+    @media (max-width: 480px) {
+      font-size: 0.9rem;
+    }
+
     &.amount {
       font-size: 1.5rem;
       color: #27ae60;
       font-weight: 700;
+
+      @media (max-width: 480px) {
+        font-size: 1.3rem;
+      }
     }
   }
 }
@@ -324,6 +384,11 @@ const close = () => {
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: capitalize;
+
+  @media (max-width: 480px) {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+  }
 
   &.category-rent {
     background: #fff5f5;
@@ -372,6 +437,11 @@ const close = () => {
   font-size: 0.85rem;
   font-weight: 500;
 
+  @media (max-width: 480px) {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
   i {
     font-size: 0.8rem;
   }
@@ -385,11 +455,17 @@ const close = () => {
   border-radius: 6px;
   font-size: 0.9rem;
   font-weight: 500;
+
+  @media (max-width: 480px) {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+  }
 }
 
 .text-muted {
   color: #a0aec0;
   font-style: italic;
+  font-size: 0.9rem;
 }
 
 .description-section,
@@ -400,6 +476,16 @@ const close = () => {
   border-radius: 8px;
   border-left: 4px solid #667eea;
 
+  @media (max-width: 768px) {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+  }
+
   h3 {
     margin: 0 0 1rem 0;
     font-size: 0.95rem;
@@ -407,6 +493,11 @@ const close = () => {
     color: #2d3748;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+
+    @media (max-width: 480px) {
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
   }
 }
 
@@ -415,6 +506,12 @@ const close = () => {
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
+  font-size: 0.95rem;
+
+  @media (max-width: 480px) {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
 }
 
 .vendor-details {
@@ -428,6 +525,11 @@ const close = () => {
   align-items: flex-start;
   gap: 1rem;
 
+  @media (max-width: 480px) {
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
   .label {
     font-weight: 600;
     color: #2d3748;
@@ -436,6 +538,11 @@ const close = () => {
     align-items: center;
     gap: 0.5rem;
     min-width: 100px;
+
+    @media (max-width: 480px) {
+      min-width: 80px;
+      font-size: 0.9rem;
+    }
 
     i {
       font-size: 0.85rem;
@@ -446,6 +553,11 @@ const close = () => {
   .value {
     color: #4a5568;
     word-break: break-word;
+    font-size: 0.95rem;
+
+    @media (max-width: 480px) {
+      font-size: 0.85rem;
+    }
   }
 }
 
@@ -456,6 +568,18 @@ const close = () => {
   padding: 1.5rem;
   border-top: 1px solid #edf2f7;
   background: #f7fafc;
+  position: sticky;
+  bottom: 0;
+
+  @media (max-width: 768px) {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+    gap: 0.5rem;
+  }
 }
 
 .btn-primary,
@@ -468,8 +592,24 @@ const close = () => {
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   font-size: 0.95rem;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+    gap: 0.35rem;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .btn-primary {
@@ -479,6 +619,12 @@ const close = () => {
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+
+  @media (max-width: 480px) {
+    &:hover {
+      transform: translateY(-1px);
+    }
   }
 }
 
@@ -493,23 +639,21 @@ const close = () => {
   }
 }
 
-@media (max-width: 768px) {
-  .modal {
-    width: 95%;
-  }
+// Scrollbar styling
+.modal::-webkit-scrollbar {
+  width: 8px;
+}
 
-  .details-grid {
-    grid-template-columns: 1fr;
-  }
+.modal::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
 
-  .modal-footer {
-    flex-direction: column-reverse;
-  }
+.modal::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
 
-  .btn-primary,
-  .btn-secondary {
-    width: 100%;
-    justify-content: center;
+  &:hover {
+    background: #a0aec0;
   }
 }
 </style>

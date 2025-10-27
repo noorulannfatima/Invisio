@@ -3,9 +3,6 @@
     <!-- Header -->
     <ExpenseHeader @add-expense="openCreateModal" />
 
-    <!-- Summary Cards -->
-    <ExpenseSummaryCards />
-
     <!-- Filters Section -->
     <ExpenseFilters 
       :filters="filters"
@@ -17,7 +14,7 @@
     <!-- Error Message -->
     <div v-if="expenseStore.error" class="error-message">
       {{ expenseStore.error }}
-      <button @click="expenseStore.clearError">✕</button>
+      <button @click="expenseStore.clearError" aria-label="Close error">✕</button>
     </div>
 
     <!-- Loading State -->
@@ -28,7 +25,6 @@
     <!-- Expenses Table -->
     <ExpenseTable
       v-else
-      @view="viewExpense"
       @edit="editExpense"
       @delete="confirmDelete"
     />
@@ -70,7 +66,6 @@ import { usePartyStore } from '@/store/partyStore';
 
 // Import components
 import ExpenseHeader from '@/components/Expense/ExpenseHeader.vue';
-import ExpenseSummaryCards from '@/components/Expense/ExpenseSummaryCards.vue';
 import ExpenseFilters from '@/components/Expense/ExpenseFilters.vue';
 import ExpenseTable from '@/components/Expense/ExpenseTable.vue';
 import ExpenseReport from '@/components/Expense/ExpenseReport.vue';
@@ -81,15 +76,23 @@ import ConfirmDeleteModal from '@/components/Common/ConfirmDeleteModal.vue';
 const expenseStore = useExpenseStore();
 const partyStore = usePartyStore();
 
+// Type Definition
+type FilterState = {
+  startDate: string;
+  endDate: string;
+  Category: string;
+  sortBy: 'newest' | 'oldest' | 'amount-high' | 'amount-low' | 'category' | '';
+};
+
 // State
 const showCreateModal = ref(false);
 const showDetailsModal = ref(false);
 const showDeleteConfirm = ref(false);
 const editingExpenseId = ref<number | null>(null);
 const deleteExpenseId = ref<number | null>(null);
-const currentExpenseDetails = ref(null);
+const currentExpenseDetails = ref<any>(null);
 
-const filters = ref({
+const filters = ref<FilterState>({
   startDate: '',
   endDate: '',
   Category: '',
@@ -107,11 +110,15 @@ const formData = ref({
 
 // Lifecycle
 onMounted(async () => {
-  await expenseStore.fetchAllExpenses();
-  await partyStore.fetchAllParties();
-  
-  const now = new Date();
-  await expenseStore.getExpenseReport(now.getFullYear(), now.getMonth() + 1);
+  try {
+    await expenseStore.fetchAllExpenses();
+    await partyStore.fetchAllParties();
+    
+    const now = new Date();
+    await expenseStore.getExpenseReport(now.getFullYear(), now.getMonth() + 1);
+  } catch (err) {
+    console.error('Error loading expense data:', err);
+  }
 });
 
 // Methods
@@ -218,7 +225,7 @@ const performDelete = async () => {
   }
 };
 
-const updateFilters = (newFilters: any) => {
+const updateFilters = (newFilters: FilterState) => {
   filters.value = newFilters;
 };
 
@@ -250,9 +257,43 @@ const clearFilters = async () => {
   min-height: 100vh;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  @media (max-width: 768px) {
-    margin-left: 0;
+  // Large Desktop (1920px and above)
+  @media (min-width: 1920px) {
+    padding: 2.5rem 3rem;
+    margin-left: 280px;
+  }
+
+  // Desktop (1200px to 1919px)
+  @media (min-width: 1200px) {
+    padding: 2rem;
+    margin-left: 260px;
+  }
+
+  // Tablet Landscape (1024px to 1199px)
+  @media (min-width: 1024px) and (max-width: 1199px) {
+    padding: 1.5rem;
+    margin-left: 240px;
+  }
+
+  // Tablet Portrait (768px to 1023px)
+  @media (min-width: 768px) and (max-width: 1023px) {
+    padding: 1.5rem;
+    margin-left: 100px;
+    margin-top: 60px;
+  }
+
+  // Mobile Landscape (480px to 767px)
+  @media (min-width: 480px) and (max-width: 767px) {
     padding: 1rem;
+    margin-left: 60px;
+    margin-top: 50px;
+  }
+
+  // Mobile Portrait (below 480px)
+  @media (max-width: 479px) {
+    padding: 0.75rem;
+    margin-left: 0;
+    margin-top: 45px;
   }
 }
 
@@ -267,6 +308,21 @@ const clearFilters = async () => {
   margin-bottom: 1.5rem;
   border-left: 4px solid #f56565;
   box-shadow: 0 2px 8px rgba(245, 101, 101, 0.1);
+  animation: slideInDown 0.3s ease-out;
+
+  @media (max-width: 768px) {
+    padding: 0.875rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.75rem 0.875rem;
+    margin-bottom: 0.75rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+  }
 
   button {
     background: none;
@@ -282,9 +338,21 @@ const clearFilters = async () => {
     height: 32px;
     border-radius: 4px;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 
     &:hover {
       background: rgba(245, 101, 101, 0.1);
+      transform: scale(1.1);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    @media (max-width: 480px) {
+      width: 28px;
+      height: 28px;
+      font-size: 1.25rem;
     }
   }
 }
@@ -297,16 +365,79 @@ const clearFilters = async () => {
   color: #667eea;
   font-size: 1.1rem;
   font-weight: 500;
+  animation: fadeIn 0.3s ease-in;
+
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+    font-size: 1rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.5rem 0.75rem;
+    font-size: 0.95rem;
+  }
 
   i {
     margin-right: 0.75rem;
     font-size: 1.5rem;
+
+    @media (max-width: 480px) {
+      margin-right: 0.5rem;
+      font-size: 1.25rem;
+    }
   }
 }
 
-@media (max-width: 768px) {
+// Animations
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Responsive utility adjustments
+@media (max-width: 1023px) {
+  .expense-container {
+    transition: all 0.3s ease;
+  }
+}
+
+// High DPI screens (Retina displays)
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .error-message {
+    box-shadow: 0 2px 8px rgba(245, 101, 101, 0.15);
+  }
+}
+
+// Print styles
+@media print {
   .expense-container {
     margin-left: 0;
+    margin-top: 0;
+    padding: 0;
+    background: white;
+  }
+
+  .error-message {
+    display: none;
+  }
+
+  .loading {
+    display: none;
   }
 }
 </style>
