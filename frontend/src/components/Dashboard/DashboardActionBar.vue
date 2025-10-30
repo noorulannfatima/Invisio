@@ -7,7 +7,6 @@
     </button>
     <div v-else class="company-info-bar">
       <span class="company-name">{{ companyStore.companyName }}</span>
-      <button class="btn btn-secondary" @click="$emit('edit-company')">Edit</button>
     </div>
   </div>
 </template>
@@ -23,7 +22,6 @@ defineProps<Props>();
 
 defineEmits<{
   'create-company': [];
-  'edit-company': [];
 }>();
 
 const companyStore = useCompanyStore();

@@ -1,16 +1,12 @@
 <!-- views/Dashboard.vue -->
 <template>
   <div class="dashboard">
-    <!-- Header Section -->
-    <DashboardHeader />
 
     <!-- Action Bar -->
     <DashboardActionBar
       :is-company-created="companyStore.isCompanyCreated"
       @create-company="openCreateCompanyModal"
-      @edit-company="openEditCompanyModal"
     />
-
     <!-- Welcome Section -->
     <DashboardWelcome
       v-if="!companyStore.isCompanyCreated"
@@ -32,7 +28,6 @@
 
         <!-- Right Section: Company & Owner -->
         <div class="right-section">
-          <DashboardCompanyCard />
        
           <DashboardExpenseChart />
         </div>
@@ -52,7 +47,7 @@
 
     <!-- Modals -->
     <CreateCompanyModal v-if="showCreateModal" @close="showCreateModal = false" @success="onCompanyCreated" />
-    <EditCompanyModal v-if="showEditModal" @close="showEditModal = false" @success="onCompanyUpdated" />
+
   </div>
 </template>
 
@@ -62,25 +57,21 @@ import { useCompanyStore } from '@/store/companyStore';
 import { useItemStore } from '@/store/itemStore';
 
 // Import Dashboard Components
-import DashboardHeader from '@/components/Dashboard/DashboardHeader.vue';
 import DashboardActionBar from '@/components/Dashboard/DashboardActionBar.vue';
 import DashboardWelcome from '@/components/Dashboard/DashboardWelcome.vue';
 import DashboardQuickStats from '@/components/Dashboard/DashboardQuickStats.vue';
 import DashboardFinanceCard from '@/components/Dashboard/DashboardFinanceCard.vue';
 import DashboardRevenueChart from '@/components/Dashboard/DashboardRevenueChart.vue';
-import DashboardCompanyCard from '@/components/Dashboard/DashboardCompanyCard.vue';
 import DashboardExpenseChart from '@/components/Dashboard/DashboardExpenseChart.vue';
 
 // Import Modals
 import CreateCompanyModal from '@/components/Company/CreateCompanyModal.vue';
-import EditCompanyModal from '@/components/Company/EditCompanyModal.vue';
 
 
 const companyStore = useCompanyStore();
 const itemStore = useItemStore();
 
 const showCreateModal = ref(false);
-const showEditModal = ref(false);
 const isRefreshing = ref(false);
 
 onMounted(async () => {
@@ -104,17 +95,11 @@ const openCreateCompanyModal = () => {
   showCreateModal.value = true;
 };
 
-const openEditCompanyModal = () => {
-  showEditModal.value = true;
-};
 
 const onCompanyCreated = () => {
   showCreateModal.value = false;
 };
 
-const onCompanyUpdated = () => {
-  showEditModal.value = false;
-};
 
 const refreshCompanyData = async () => {
   isRefreshing.value = true;
