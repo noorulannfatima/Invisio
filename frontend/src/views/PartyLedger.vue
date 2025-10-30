@@ -48,22 +48,22 @@
       <div v-if="reportStore.partyLedgerReport" class="summary-grid">
         <div class="summary-item">
           <span class="label">Total Purchases</span>
-          <span class="value">₹{{ reportStore.partyLedgerReport.Summary.Total_Purchases.toLocaleString() }}</span>
+          <span class="value">Rs{{ reportStore.partyLedgerReport.Summary.Total_Purchases.toLocaleString() }}</span>
         </div>
         <div class="summary-item">
           <span class="label">Total Sales</span>
-          <span class="value">₹{{ reportStore.partyLedgerReport.Summary.Total_Sales.toLocaleString() }}</span>
+          <span class="value">Rs{{ reportStore.partyLedgerReport.Summary.Total_Sales.toLocaleString() }}</span>
         </div>
         <div class="summary-item">
           <span class="label">Total Expenses</span>
-          <span class="value">₹{{ reportStore.partyLedgerReport.Summary.Total_Expenses.toLocaleString() }}</span>
+          <span class="value">Rs{{ reportStore.partyLedgerReport.Summary.Total_Expenses.toLocaleString() }}</span>
         </div>
         <div
           class="summary-item"
           :class="{ positive: reportStore.partyLedgerReport.Summary.Net_Balance > 0, negative: reportStore.partyLedgerReport.Summary.Net_Balance < 0 }"
         >
           <span class="label">Net Balance</span>
-          <span class="value">₹{{ reportStore.partyLedgerReport.Summary.Net_Balance.toLocaleString() }}</span>
+          <span class="value">Rs{{ reportStore.partyLedgerReport.Summary.Net_Balance.toLocaleString() }}</span>
         </div>
       </div>
 
@@ -97,7 +97,7 @@
                     {{ txn.Type }}
                   </span>
                 </td>
-                <td class="amount">₹{{ txn.Amount.toLocaleString() }}</td>
+                <td class="amount">Rs{{ txn.Amount.toLocaleString() }}</td>
                 <td>{{ txn.Payment_Mode }}</td>
               </tr>
             </tbody>

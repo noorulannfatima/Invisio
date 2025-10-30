@@ -74,62 +74,154 @@ export interface TransactionFilters {
   sortBy?: 'date-newest' | 'date-oldest' | 'amount-high' | 'amount-low';
 }
 
-// API Service
-const API_BASE_URL = '/api/transaction';
+// API Service with proper error handling
+const API_BASE_URL = 'http://localhost:3000/api/transaction';
 
 const transactionAPI = {
   async createInvoice(payload: CreateInvoicePayload): Promise<Invoice> {
-    const response = await fetch(`${API_BASE_URL}/invoice`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!response.ok) throw new Error('Failed to create invoice');
-    const data = await response.json();
-    return data.invoice;
+    try {
+      const response = await fetch(`${API_BASE_URL}/invoice`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server returned non-JSON response (${response.status}). Check if API endpoint exists.`);
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return data.invoice;
+    } catch (error) {
+      console.error('createInvoice API error:', error);
+      throw error;
+    }
   },
 
   async createPurchaseBill(payload: CreateInvoicePayload): Promise<Invoice> {
-    const response = await fetch(`${API_BASE_URL}/bill`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!response.ok) throw new Error('Failed to create purchase bill');
-    const data = await response.json();
-    return data.bill;
+    try {
+      const response = await fetch(`${API_BASE_URL}/bill`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server returned non-JSON response (${response.status}). Check if API endpoint exists.`);
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return data.bill;
+    } catch (error) {
+      console.error('createPurchaseBill API error:', error);
+      throw error;
+    }
   },
 
   async getInvoiceById(transactionId: number): Promise<Invoice> {
-    const response = await fetch(`${API_BASE_URL}/${transactionId}`);
-    if (!response.ok) throw new Error('Failed to fetch invoice');
-    return response.json();
+    try {
+      const response = await fetch(`${API_BASE_URL}/${transactionId}`, {
+        credentials: 'include'
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server returned non-JSON response (${response.status}). Check if API endpoint exists.`);
+      }
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to fetch invoice');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('getInvoiceById API error:', error);
+      throw error;
+    }
   },
 
   async getAllInvoices(filters?: TransactionFilters): Promise<{ count: number; transactions: Invoice[] }> {
-    const params = new URLSearchParams();
-    if (filters) {
-      if (filters.startDate) params.append('startDate', filters.startDate);
-      if (filters.endDate) params.append('endDate', filters.endDate);
-      if (filters.Party_ID) params.append('Party_ID', filters.Party_ID.toString());
-      if (filters.Type) params.append('Type', filters.Type);
-      if (filters.Status) params.append('Status', filters.Status);
-      if (filters.sortBy) params.append('sortBy', filters.sortBy);
-    }
+    try {
+      const params = new URLSearchParams();
+      if (filters) {
+        if (filters.startDate) params.append('startDate', filters.startDate);
+        if (filters.endDate) params.append('endDate', filters.endDate);
+        if (filters.Party_ID) params.append('Party_ID', filters.Party_ID.toString());
+        if (filters.Type) params.append('Type', filters.Type);
+        if (filters.Status) params.append('Status', filters.Status);
+        if (filters.sortBy) params.append('sortBy', filters.sortBy);
+      }
 
-    const response = await fetch(`${API_BASE_URL}?${params.toString()}`);
-    if (!response.ok) throw new Error('Failed to fetch invoices');
-    return response.json();
+      const url = params.toString() ? `${API_BASE_URL}?${params.toString()}` : API_BASE_URL;
+      
+      const response = await fetch(url, {
+        credentials: 'include'
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server returned non-JSON response (${response.status}). Check if API endpoint exists at ${url}`);
+      }
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to fetch invoices');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('getAllInvoices API error:', error);
+      throw error;
+    }
   },
 
   async getGSTSummary(startDate?: string, endDate?: string): Promise<GSTSummary> {
-    const params = new URLSearchParams();
-    if (startDate) params.append('startDate', startDate);
-    if (endDate) params.append('endDate', endDate);
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
 
-    const response = await fetch(`${API_BASE_URL}/gst-summary?${params.toString()}`);
-    if (!response.ok) throw new Error('Failed to fetch GST summary');
-    return response.json();
+      const url = `${API_BASE_URL}/gst-summary${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      const response = await fetch(url, {
+        credentials: 'include'
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server returned non-JSON response (${response.status}). Check if API endpoint exists.`);
+      }
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to fetch GST summary');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('getGSTSummary API error:', error);
+      throw error;
+    }
   }
 };
 
@@ -179,7 +271,9 @@ export const useTransactionStore = defineStore('transaction', () => {
       invoices.value.unshift(invoice);
       return invoice;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Unknown error';
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      error.value = errorMsg;
+      console.error('Store createInvoice error:', errorMsg);
       throw err;
     } finally {
       loading.value = false;
@@ -194,7 +288,9 @@ export const useTransactionStore = defineStore('transaction', () => {
       invoices.value.unshift(bill);
       return bill;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Unknown error';
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      error.value = errorMsg;
+      console.error('Store createPurchaseBill error:', errorMsg);
       throw err;
     } finally {
       loading.value = false;
@@ -207,7 +303,9 @@ export const useTransactionStore = defineStore('transaction', () => {
     try {
       currentInvoice.value = await transactionAPI.getInvoiceById(transactionId);
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Unknown error';
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      error.value = errorMsg;
+      console.error('Store fetchInvoiceById error:', errorMsg);
       throw err;
     } finally {
       loading.value = false;
@@ -224,7 +322,9 @@ export const useTransactionStore = defineStore('transaction', () => {
       const data = await transactionAPI.getAllInvoices(filters.value);
       invoices.value = data.transactions;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Unknown error';
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      error.value = errorMsg;
+      console.error('Store fetchAllInvoices error:', errorMsg);
       throw err;
     } finally {
       loading.value = false;
@@ -237,7 +337,9 @@ export const useTransactionStore = defineStore('transaction', () => {
     try {
       gstSummary.value = await transactionAPI.getGSTSummary(startDate, endDate);
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Unknown error';
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      error.value = errorMsg;
+      console.error('Store fetchGSTSummary error:', errorMsg);
       throw err;
     } finally {
       loading.value = false;

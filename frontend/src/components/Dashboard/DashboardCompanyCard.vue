@@ -1,4 +1,4 @@
-<!--DashboardCompanyCard.vue -->
+<!--DashboardCompanyCard.vue  delete-->
 <template>
   <div class="card company-card">
     <div class="card-header">

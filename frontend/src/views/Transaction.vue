@@ -1,4 +1,4 @@
-<!-- views/Finance.vue-->
+<!-- views/Transaction.vue-->
 <template>
   <div class="page finance">
     <!-- Header -->
@@ -23,14 +23,7 @@
     <!-- Date Range Filter -->
     <DateFilter @apply-filter="applyDateFilter" />
 
-    <!-- Error State -->
-    <div v-if="store.error" class="error-alert">
-      <i class="fas fa-exclamation-circle"></i>
-      <span>{{ store.error }}</span>
-      <button @click="store.clearError" class="close-btn">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
+    
 
     <!-- Transactions Table -->
     <TransactionTable 
@@ -40,18 +33,10 @@
       @refresh="fetchAllInvoices"
     />
 
-    <!-- Create Invoice Modal -->
-    <CreateInvoiceModal 
-      v-if="showCreateInvoice"
-      @close="showCreateInvoice = false"
-      @invoice-created="onInvoiceCreated"
-    />
-
-    <!-- Create Bill Modal -->
-    <CreateBillModal 
-      v-if="showCreateBill"
-      @close="showCreateBill = false"
-      @bill-created="onBillCreated"
+    <!-- GST Summary -->
+    <FinanceGSTSummary 
+      v-if="gstSummary"
+      :gst-data="gstSummary"
     />
   </div>
 </template>
@@ -61,8 +46,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useTransactionStore, type TransactionFilters } from '@/store/transactionStore';
 import TransactionTable from '@/components/Transaction/TransactionTable.vue';
 import DateFilter from '@/components/Transaction/DateFilter.vue';
-import CreateInvoiceModal from '@/components/Transaction/CreateInvoiceModal.vue';
-import CreateBillModal from '@/components/Transaction/CreateBillModal.vue';
+import FinanceGSTSummary from '@/components/Transaction/FinanceGSTSummary.vue';
 
 const store = useTransactionStore();
 const showCreateInvoice = ref(false);
@@ -71,45 +55,32 @@ const showCreateBill = ref(false);
 // Computed properties from store
 const invoices = computed(() => store.invoices);
 const loading = computed(() => store.loading);
+const salesInvoices = computed(() => store.salesInvoices);
+const purchaseInvoices = computed(() => store.purchaseInvoices);
+const totalSalesAmount = computed(() => store.totalSalesAmount);
+const totalPurchaseAmount = computed(() => store.totalPurchaseAmount);
+const pendingInvoices = computed(() => store.pendingInvoices);
+const gstSummary = computed(() => store.gstSummary);
+
+const netProfit = computed(() => totalSalesAmount.value - totalPurchaseAmount.value);
 
 onMounted(async () => {
   await fetchAllInvoices();
+  await store.fetchGSTSummary();
 });
 
 const fetchAllInvoices = async () => {
-  try {
-    await store.fetchAllInvoices();
-  } catch (err) {
-    console.error('Failed to fetch invoices:', err);
-  }
+  await store.fetchAllInvoices();
 };
 
 const applyDateFilter = async (filters: TransactionFilters) => {
-  try {
-    await store.fetchAllInvoices(filters);
-  } catch (err) {
-    console.error('Failed to apply filters:', err);
-  }
+  await store.fetchAllInvoices(filters);
+  await store.fetchGSTSummary(filters.startDate, filters.endDate);
 };
 
 const viewTransactionDetails = async (transactionId: number) => {
-  try {
-    await store.fetchInvoiceById(transactionId);
-    // TODO: Open a modal or navigate to details page
-    console.log('View transaction:', transactionId);
-  } catch (err) {
-    console.error('Failed to fetch transaction details:', err);
-  }
-};
-
-const onInvoiceCreated = async () => {
-  showCreateInvoice.value = false;
-  await fetchAllInvoices();
-};
-
-const onBillCreated = async () => {
-  showCreateBill.value = false;
-  await fetchAllInvoices();
+  await store.fetchInvoiceById(transactionId);
+  // Could open a modal here
 };
 </script>
 
@@ -195,35 +166,11 @@ const onBillCreated = async () => {
     }
   }
 
-  .error-alert {
-    background: rgba(220, 53, 69, 0.1);
-    border: 1px solid #dc3545;
-    border-radius: 8px;
-    padding: 1rem 1.5rem;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    color: #dc3545;
-
-    i {
-      font-size: 1.2rem;
-      flex-shrink: 0;
-    }
-
-    .close-btn {
-      margin-left: auto;
-      background: none;
-      border: none;
-      color: #dc3545;
-      cursor: pointer;
-      font-size: 1.2rem;
-      padding: 0;
-
-      &:hover {
-        opacity: 0.7;
-      }
-    }
+  .charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
   }
 }
 
@@ -245,20 +192,9 @@ const onBillCreated = async () => {
         }
       }
     }
-  }
-}
 
-@media (max-width: 768px) {
-  .page {
-    padding: 1rem;
-    margin-top: 60px;
-
-    .finance-header {
-      padding: 1rem;
-
-      .page-title {
-        font-size: 1.4rem;
-      }
+    .charts-section {
+      grid-template-columns: 1fr;
     }
   }
 }

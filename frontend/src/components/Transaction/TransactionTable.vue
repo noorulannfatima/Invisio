@@ -1,3 +1,4 @@
+<!-- componenets/Transaction/TransactionTable.vue-->
 <template>
   <div class="transaction-section">
     <div class="section-header">

@@ -1,4 +1,4 @@
-// transactionController.js
+
 // controllers/transactionController.js
 const { Company, Party, Item, Transaction, TransactionLineItem } = require('../models');
 const { Op, sequelize } = require('sequelize');

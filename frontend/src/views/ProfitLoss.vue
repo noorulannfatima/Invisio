@@ -40,7 +40,7 @@
           <div class="summary-grid">
             <div class="summary-item">
               <span class="label">Total Revenue</span>
-              <span class="value">₹{{ reportStore.profitLossReport.Income.Total_Revenue.toLocaleString() }}</span>
+              <span class="value">Rs{{ reportStore.profitLossReport.Income.Total_Revenue.toLocaleString() }}</span>
             </div>
           </div>
         </div>
@@ -51,11 +51,11 @@
           <div class="summary-grid">
             <div class="summary-item">
               <span class="label">Cost of Goods Sold (COGS)</span>
-              <span class="value">₹{{ reportStore.profitLossReport.Expenses.Cost_of_Goods_Sold.toLocaleString() }}</span>
+              <span class="value">Rs{{ reportStore.profitLossReport.Expenses.Cost_of_Goods_Sold.toLocaleString() }}</span>
             </div>
             <div class="summary-item">
               <span class="label">Operating Expenses</span>
-              <span class="value">₹{{ reportStore.profitLossReport.Expenses.Operating_Expenses.toLocaleString() }}</span>
+              <span class="value">Rs{{ reportStore.profitLossReport.Expenses.Operating_Expenses.toLocaleString() }}</span>
             </div>
           </div>
         </div>
@@ -66,14 +66,14 @@
           <div class="summary-grid">
             <div class="summary-item highlight">
               <span class="label">Gross Profit</span>
-              <span class="value">₹{{ reportStore.profitLossReport.Profit_Loss.Gross_Profit.toLocaleString() }}</span>
+              <span class="value">Rs{{ reportStore.profitLossReport.Profit_Loss.Gross_Profit.toLocaleString() }}</span>
             </div>
             <div
               class="summary-item highlight"
               :class="{ positive: reportStore.profitLossReport.Profit_Loss.Net_Profit > 0, negative: reportStore.profitLossReport.Profit_Loss.Net_Profit < 0 }"
             >
               <span class="label">Net Profit</span>
-              <span class="value">₹{{ reportStore.profitLossReport.Profit_Loss.Net_Profit.toLocaleString() }}</span>
+              <span class="value">Rs{{ reportStore.profitLossReport.Profit_Loss.Net_Profit.toLocaleString() }}</span>
             </div>
             <div class="summary-item highlight">
               <span class="label">Profit Margin</span>
@@ -86,17 +86,17 @@
         <div class="breakdown-info">
           <div class="info-card">
             <h4>Revenue Breakdown</h4>
-            <p>Total Revenue: ₹{{ reportStore.profitLossReport.Income.Total_Revenue.toLocaleString() }}</p>
+            <p>Total Revenue: Rs{{ reportStore.profitLossReport.Income.Total_Revenue.toLocaleString() }}</p>
           </div>
           <div class="info-card">
             <h4>Total Expenses</h4>
-            <p>₹{{ (reportStore.profitLossReport.Expenses.Cost_of_Goods_Sold + reportStore.profitLossReport.Expenses.Operating_Expenses).toLocaleString() }}</p>
+            <p>Rs{{ (reportStore.profitLossReport.Expenses.Cost_of_Goods_Sold + reportStore.profitLossReport.Expenses.Operating_Expenses).toLocaleString() }}</p>
           </div>
           <div class="info-card">
             <h4>Net Result</h4>
             <p :class="{ profit: reportStore.profitLossReport.Profit_Loss.Net_Profit > 0, loss: reportStore.profitLossReport.Profit_Loss.Net_Profit < 0 }">
               {{ reportStore.profitLossReport.Profit_Loss.Net_Profit > 0 ? 'Profit' : 'Loss' }}: 
-              ₹{{ Math.abs(reportStore.profitLossReport.Profit_Loss.Net_Profit).toLocaleString() }}
+              Rs{{ Math.abs(reportStore.profitLossReport.Profit_Loss.Net_Profit).toLocaleString() }}
             </p>
           </div>
         </div>

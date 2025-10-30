@@ -40,7 +40,7 @@
         </div>
         <div class="summary-item">
           <span class="label">Total Inventory Value</span>
-          <span class="value">₹{{ reportStore.stockSummaryReport.Summary.Total_Inventory_Value.toLocaleString() }}</span>
+          <span class="value">Rs{{ reportStore.stockSummaryReport.Summary.Total_Inventory_Value.toLocaleString() }}</span>
         </div>
       </div>
 
@@ -87,8 +87,8 @@
                 <td class="item-name">{{ item.Name }}</td>
                 <td>{{ item.Current_Stock }}</td>
                 <td>{{ item.Unit }}</td>
-                <td>₹{{ item.Selling_Price.toLocaleString() }}</td>
-                <td>₹{{ item.Inventory_Value.toLocaleString() }}</td>
+                <td>Rs{{ item.Selling_Price.toLocaleString() }}</td>
+                <td>Rs{{ item.Inventory_Value.toLocaleString() }}</td>
                 <td>
                   <span :class="['status', item.Status.toLowerCase().replace(' ', '-')]">
                     {{ item.Status }}

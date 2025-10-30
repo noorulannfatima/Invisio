@@ -1,6 +1,6 @@
 <template>
   <div class="brain">
-    <h1 class="brain__title">AI Chat</h1>
+    <h1 class="brain__title">Your business brain — powered by AI.</h1>
 
     <div class="brain__chat-box">
       <div
