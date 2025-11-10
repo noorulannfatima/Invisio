@@ -1,4 +1,4 @@
-<!-- components/Transaction/CreateBillModal.vue-->
+<!-- components/Transaction/CreateBillModal.vue -->
 <template>
   <div class="modal-overlay" @click="closeModal">
     <div class="modal-content" @click.stop>
@@ -16,14 +16,18 @@
         <!-- Supplier Selection -->
         <div class="form-group">
           <label for="supplier" class="form-label">Supplier *</label>
-          <select 
+          <select
             id="supplier"
-            v-model="formData.Party_ID" 
+            v-model="formData.Party_ID"
             class="form-input"
             required
           >
             <option :value="null">Select a supplier</option>
-            <option v-for="party in suppliers" :key="party.Party_ID" :value="party.Party_ID">
+            <option
+              v-for="party in suppliers"
+              :key="party.Party_ID"
+              :value="party.Party_ID"
+            >
               {{ party.Name }}
             </option>
           </select>
@@ -32,10 +36,10 @@
         <!-- Date -->
         <div class="form-group">
           <label for="date" class="form-label">Date *</label>
-          <input 
+          <input
             id="date"
-            v-model="formData.Date" 
-            type="date" 
+            v-model="formData.Date"
+            type="date"
             class="form-input"
             required
           />
@@ -44,10 +48,10 @@
         <!-- GST Rate -->
         <div class="form-group">
           <label for="gst-rate" class="form-label">GST Rate (%) *</label>
-          <input 
+          <input
             id="gst-rate"
-            v-model.number="formData.GST_Rate" 
-            type="number" 
+            v-model.number="formData.GST_Rate"
+            type="number"
             min="0"
             max="100"
             step="0.01"
@@ -60,18 +64,26 @@
         <div class="form-group">
           <label class="form-label">Line Items *</label>
           <div class="line-items-section">
-            <div v-for="(item, index) in formData.Line_Items" :key="index" class="line-item">
+            <div
+              v-for="(item, index) in formData.Line_Items"
+              :key="index"
+              class="line-item"
+            >
               <div class="line-item-grid">
                 <div class="form-group">
                   <label class="form-label small">Item *</label>
-                  <select 
-                    v-model="item.Item_ID" 
+                  <select
+                    v-model="item.Item_ID"
                     class="form-input"
                     @change="onItemSelected(index, item.Item_ID)"
                     required
                   >
                     <option :value="0">Select an item</option>
-                    <option v-for="availableItem in items" :key="availableItem.Item_ID" :value="availableItem.Item_ID">
+                    <option
+                      v-for="availableItem in items"
+                      :key="availableItem.Item_ID"
+                      :value="availableItem.Item_ID"
+                    >
                       {{ availableItem.Name }}
                     </option>
                   </select>
@@ -79,9 +91,9 @@
 
                 <div class="form-group">
                   <label class="form-label small">Quantity *</label>
-                  <input 
-                    v-model.number="item.Quantity" 
-                    type="number" 
+                  <input
+                    v-model.number="item.Quantity"
+                    type="number"
                     min="0.01"
                     step="0.01"
                     class="form-input"
@@ -91,9 +103,9 @@
 
                 <div class="form-group">
                   <label class="form-label small">Rate *</label>
-                  <input 
-                    v-model.number="item.Rate" 
-                    type="number" 
+                  <input
+                    v-model.number="item.Rate"
+                    type="number"
                     min="0"
                     step="0.01"
                     class="form-input"
@@ -103,9 +115,9 @@
 
                 <div class="form-group">
                   <label class="form-label small">Discount</label>
-                  <input 
-                    v-model.number="item.Discount" 
-                    type="number" 
+                  <input
+                    v-model.number="item.Discount"
+                    type="number"
                     min="0"
                     step="0.01"
                     class="form-input"
@@ -115,15 +127,15 @@
 
                 <div class="form-group">
                   <label class="form-label small">Line Total</label>
-                  <input 
-                    :value="calculateLineTotal(item)" 
-                    type="number" 
+                  <input
+                    :value="calculateLineTotal(item)"
+                    type="number"
                     class="form-input"
                     disabled
                   />
                 </div>
 
-                <button 
+                <button
                   v-if="formData.Line_Items.length > 1"
                   type="button"
                   class="btn-remove"
@@ -134,8 +146,8 @@
               </div>
             </div>
 
-            <button 
-              type="button" 
+            <button
+              type="button"
               class="btn-add-item"
               @click="addLineItem"
             >
@@ -148,10 +160,10 @@
         <!-- Payment Mode (Optional) -->
         <div class="form-group">
           <label for="payment-mode" class="form-label">Payment Mode</label>
-          <input 
+          <input
             id="payment-mode"
-            v-model="formData.Payment_Mode" 
-            type="text" 
+            v-model="formData.Payment_Mode"
+            type="text"
             class="form-input"
             placeholder="e.g., Cash, Bank Transfer"
           />
@@ -229,24 +241,19 @@ const formData = ref<FormData>({
 
 onMounted(async () => {
   try {
-    // Fetch suppliers (parties with type Supplier or Both)
     const response = await fetch('http://localhost:3000/api/party', {
-      credentials: 'include'
+      credentials: 'include',
     });
-    
     if (response.ok) {
       const data = await response.json();
-      // Filter only suppliers
-      suppliers.value = data.parties.filter((p: any) => 
-        p.Type === 'Supplier' || p.Type === 'Both'
+      suppliers.value = data.parties.filter(
+        (p: any) => p.Type === 'Supplier' || p.Type === 'Both'
       );
     }
 
-    // Fetch items
     const itemsResponse = await fetch('http://localhost:3000/api/item', {
-      credentials: 'include'
+      credentials: 'include',
     });
-    
     if (itemsResponse.ok) {
       const itemsData = await itemsResponse.json();
       items.value = itemsData.items || [];
@@ -257,14 +264,14 @@ onMounted(async () => {
 });
 
 const onItemSelected = (index: number, itemId: number) => {
-  const selectedItem = items.value.find(item => item.Item_ID === itemId);
+  const selectedItem = items.value.find((item) => item.Item_ID === itemId);
   if (selectedItem) {
     formData.value.Line_Items[index].Item_Name = selectedItem.Name;
-    // Pre-fill the rate with item's purchase/sale price if available
     if (selectedItem.Purchase_Price) {
       formData.value.Line_Items[index].Rate = selectedItem.Purchase_Price;
     } else if (selectedItem.Sale_Price || selectedItem.Selling_Price) {
-      formData.value.Line_Items[index].Rate = selectedItem.Sale_Price || selectedItem.Selling_Price;
+      formData.value.Line_Items[index].Rate =
+        selectedItem.Sale_Price || selectedItem.Selling_Price;
     }
   }
 };
@@ -273,27 +280,27 @@ const calculateLineTotal = (item: LineItem): number => {
   const quantity = item.Quantity || 0;
   const rate = item.Rate || 0;
   const discount = item.Discount || 0;
-  return (quantity * rate) - discount;
+  return quantity * rate - discount;
 };
 
-const subtotal = computed(() => {
-  return formData.value.Line_Items.reduce((sum, item) => sum + calculateLineTotal(item), 0);
-});
+const subtotal = computed(() =>
+  formData.value.Line_Items.reduce(
+    (sum, item) => sum + calculateLineTotal(item),
+    0
+  )
+);
 
-const taxAmount = computed(() => {
-  return subtotal.value * (formData.value.GST_Rate / 100);
-});
+const taxAmount = computed(
+  () => subtotal.value * (formData.value.GST_Rate / 100)
+);
 
-const total = computed(() => {
-  return subtotal.value + taxAmount.value;
-});
+const total = computed(() => subtotal.value + taxAmount.value);
 
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
+const formatCurrency = (value: number): string =>
+  new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
   }).format(value);
-};
 
 const addLineItem = () => {
   formData.value.Line_Items.push({
@@ -306,27 +313,15 @@ const addLineItem = () => {
   });
 };
 
-const removeLineItem = (index: number) => {
+const removeLineItem = (index: number) =>
   formData.value.Line_Items.splice(index, 1);
-};
 
 const submitBill = async () => {
-  if (!formData.value.Party_ID) {
-    alert('Please select a supplier');
-    return;
-  }
-
-  if (formData.value.Line_Items.length === 0) {
-    alert('Please add at least one item');
-    return;
-  }
-
-  // Validate all line items have selected items
-  const invalidItems = formData.value.Line_Items.some(item => !item.Item_ID || item.Item_ID === 0);
-  if (invalidItems) {
-    alert('Please select an item for all line items');
-    return;
-  }
+  if (!formData.value.Party_ID) return alert('Please select a supplier');
+  if (formData.value.Line_Items.length === 0)
+    return alert('Please add at least one item');
+  if (formData.value.Line_Items.some((item) => !item.Item_ID || item.Item_ID === 0))
+    return alert('Please select an item for all line items');
 
   loading.value = true;
   try {
@@ -334,12 +329,12 @@ const submitBill = async () => {
       Party_ID: formData.value.Party_ID,
       Date: formData.value.Date,
       GST_Rate: formData.value.GST_Rate,
-      Line_Items: formData.value.Line_Items.map(item => ({
+      Line_Items: formData.value.Line_Items.map((item) => ({
         Item_ID: item.Item_ID,
         Item_Name: item.Item_Name,
-        Quantity: item.Quantity || 0,
-        Rate: item.Rate || 0,
-        Discount: item.Discount || 0,
+        Quantity: item.Quantity,
+        Rate: item.Rate,
+        Discount: item.Discount,
         Line_Total: calculateLineTotal(item),
       })),
       Payment_Mode: formData.value.Payment_Mode || undefined,
@@ -350,60 +345,53 @@ const submitBill = async () => {
     emit('close');
   } catch (err) {
     console.error('Failed to create bill:', err);
-    const errorMessage = err instanceof Error ? err.message : 'Failed to create bill. Please try again.';
-    alert(errorMessage);
+    alert('Failed to create bill. Please try again.');
   } finally {
     loading.value = false;
   }
 };
 
-const closeModal = () => {
-  emit('close');
-};
+const closeModal = () => emit('close');
 </script>
 
 <style lang="scss" scoped>
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* instead of center for natural scroll */
   justify-content: center;
+  padding: 2rem;
   z-index: 1000;
-  padding: 1rem;
+  overflow-y: auto; /* allow background scroll if modal is tall */
 
-  .modal-content {
-    background: #fff;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 900px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh; /* limit height */
+  overflow-y: auto; /* enable vertical scroll */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+ 
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.5rem;
+      padding: 1.2rem 1.5rem;
       border-bottom: 1px solid #eee;
-      position: sticky;
-      top: 0;
-      background: #fff;
-      z-index: 10;
 
       .modal-title {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #1a1a1a;
         display: flex;
         align-items: center;
-        gap: 0.8rem;
+        gap: 0.5rem;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1a1a1a;
 
         i {
           color: #dc3545;
@@ -416,8 +404,6 @@ const closeModal = () => {
         font-size: 1.5rem;
         color: #999;
         cursor: pointer;
-        padding: 0;
-        transition: color 0.3s ease;
 
         &:hover {
           color: #333;
@@ -436,14 +422,9 @@ const closeModal = () => {
         flex-direction: column;
 
         .form-label {
-          font-size: 0.9rem;
           font-weight: 600;
-          color: #333;
-          margin-bottom: 0.5rem;
-
-          &.small {
-            font-size: 0.8rem;
-          }
+          font-size: 0.9rem;
+          margin-bottom: 0.4rem;
         }
 
         .form-input {
@@ -451,18 +432,11 @@ const closeModal = () => {
           border: 1px solid #ddd;
           border-radius: 6px;
           font-size: 0.95rem;
-          font-family: inherit;
-          transition: all 0.3s ease;
 
           &:focus {
             outline: none;
             border-color: #dc3545;
             box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
-          }
-
-          &:disabled {
-            background: #f5f5f5;
-            color: #999;
           }
         }
       }
@@ -473,36 +447,27 @@ const closeModal = () => {
         padding: 1rem;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.6rem;
 
         .line-item {
-          padding: 1rem;
-          background: #f9f9f9;
+          background: #fafafa;
           border-radius: 6px;
-          border: 1px solid #eee;
+          padding: 0.8rem;
 
           .line-item-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
-            gap: 0.8rem;
-            align-items: flex-end;
-
-            .form-group {
-              margin: 0;
-            }
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.6rem;
+            align-items: end;
 
             .btn-remove {
               background: #dc3545;
-              color: white;
+              color: #fff;
               border: none;
               border-radius: 6px;
-              padding: 0.7rem;
+              padding: 0.6rem;
               cursor: pointer;
-              transition: background 0.3s ease;
-              height: 40px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
+              transition: 0.3s;
 
               &:hover {
                 background: #c82333;
@@ -519,9 +484,7 @@ const closeModal = () => {
           padding: 0.8rem;
           cursor: pointer;
           font-weight: 600;
-          transition: all 0.3s ease;
           display: flex;
-          align-items: center;
           justify-content: center;
           gap: 0.5rem;
 
@@ -543,14 +506,12 @@ const closeModal = () => {
         .summary-row {
           display: flex;
           justify-content: space-between;
-          font-size: 0.95rem;
 
           &.total {
-            border-top: 2px solid #ddd;
-            padding-top: 0.5rem;
             font-weight: 700;
             font-size: 1.1rem;
-            color: #1a1a1a;
+            border-top: 2px solid #ddd;
+            padding-top: 0.5rem;
           }
         }
       }
@@ -564,20 +525,13 @@ const closeModal = () => {
         button {
           flex: 1;
           padding: 0.8rem;
-          border: none;
           border-radius: 6px;
-          font-size: 0.95rem;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
+          transition: 0.3s;
 
           &.btn-cancel {
             background: #f0f2f5;
-            color: #333;
 
             &:hover {
               background: #e9ecef;
@@ -586,12 +540,10 @@ const closeModal = () => {
 
           &.btn-submit {
             background: #dc3545;
-            color: white;
+            color: #fff;
 
             &:hover:not(:disabled) {
               background: #c82333;
-              transform: translateY(-2px);
-              box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
             }
 
             &:disabled {
@@ -607,21 +559,15 @@ const closeModal = () => {
 
 @media (max-width: 768px) {
   .modal-overlay {
+    padding: 1rem;
+
     .modal-content {
-      max-width: 100%;
+      width: 100%;
       max-height: 100vh;
+      overflow-y: auto;
 
-      .modal-form {
-        padding: 1rem;
-        gap: 1rem;
-
-        .line-items-section {
-          .line-item {
-            .line-item-grid {
-              grid-template-columns: 1fr;
-            }
-          }
-        }
+      .line-item-grid {
+        grid-template-columns: 1fr;
       }
     }
   }

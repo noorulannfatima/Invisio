@@ -1,4 +1,4 @@
-<!-- componenets/Transaction/DateFilter.vue-->
+<!-- components/Transaction/DateFilter.vue -->
 <template>
   <div class="date-filter-card">
     <div class="filter-header">
@@ -16,6 +16,7 @@
           v-model="filters.startDate" 
           type="date" 
           class="filter-input"
+          @change="applyFilters"
         />
       </div>
 
@@ -26,12 +27,13 @@
           v-model="filters.endDate" 
           type="date" 
           class="filter-input"
+          @change="applyFilters"
         />
       </div>
 
       <div class="filter-group">
         <label for="type-select" class="filter-label">Transaction Type</label>
-        <select v-model="filters.Type" id="type-select" class="filter-select">
+        <select v-model="filters.Type" id="type-select" class="filter-select" @change="applyFilters">
           <option :value="undefined">All Types</option>
           <option value="Sale">Sale</option>
           <option value="Purchase">Purchase</option>
@@ -41,7 +43,7 @@
 
       <div class="filter-group">
         <label for="status-select" class="filter-label">Status</label>
-        <select v-model="filters.Status" id="status-select" class="filter-select">
+        <select v-model="filters.Status" id="status-select" class="filter-select" @change="applyFilters">
           <option :value="undefined">All Status</option>
           <option value="Completed">Completed</option>
           <option value="Pending">Pending</option>
@@ -51,7 +53,7 @@
 
       <div class="filter-group">
         <label for="sort-select" class="filter-label">Sort By</label>
-        <select v-model="filters.sortBy" id="sort-select" class="filter-select">
+        <select v-model="filters.sortBy" id="sort-select" class="filter-select" @change="applyFilters">
           <option value="">Default</option>
           <option value="date-newest">Date (Newest)</option>
           <option value="date-oldest">Date (Oldest)</option>
@@ -76,11 +78,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { TransactionFilters } from '@/store/transactionStore';
+import { useTransactionStore, type TransactionFilters } from '@/store/transactionStore';
 
-const emit = defineEmits<{
-  'apply-filter': [filters: TransactionFilters];
-}>();
+const transactionStore = useTransactionStore();
 
 interface FilterState {
   startDate?: string;
@@ -98,25 +98,21 @@ const filters = ref<FilterState>({
   sortBy: undefined,
 });
 
-const applyFilters = () => {
+const applyFilters = async () => {
   const cleanFilters: TransactionFilters = {};
   
   if (filters.value.startDate) cleanFilters.startDate = filters.value.startDate;
   if (filters.value.endDate) cleanFilters.endDate = filters.value.endDate;
-  if (filters.value.Type) {
-    cleanFilters.Type = filters.value.Type;
-  }
-  if (filters.value.Status) {
-    cleanFilters.Status = filters.value.Status;
-  }
-  if (filters.value.sortBy) {
-    cleanFilters.sortBy = filters.value.sortBy;
-  }
+  if (filters.value.Type) cleanFilters.Type = filters.value.Type;
+  if (filters.value.Status) cleanFilters.Status = filters.value.Status;
+  if (filters.value.sortBy) cleanFilters.sortBy = filters.value.sortBy;
 
-  emit('apply-filter', cleanFilters);
+  // Update store filters and fetch
+  transactionStore.setFilters(cleanFilters);
+  await transactionStore.fetchAllInvoices(cleanFilters);
 };
 
-const resetFilters = () => {
+const resetFilters = async () => {
   filters.value = {
     startDate: undefined,
     endDate: undefined,
@@ -124,7 +120,10 @@ const resetFilters = () => {
     Status: undefined,
     sortBy: undefined,
   };
-  emit('apply-filter', {});
+  
+  // Clear store filters and fetch all
+  transactionStore.clearFilters();
+  await transactionStore.fetchAllInvoices({});
 };
 </script>
 

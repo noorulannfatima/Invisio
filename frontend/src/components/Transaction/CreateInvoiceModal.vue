@@ -1,10 +1,11 @@
-<!-- components/Transaction/CreateInvoiceModal.vue-->
+<!-- components/Transaction/CreateInvoiceModal.vue -->
 <template>
   <div class="modal-overlay" @click="closeModal">
     <div class="modal-content" @click.stop>
+      <!-- Header -->
       <div class="modal-header">
         <h2 class="modal-title">
-          <i class="fas fa-plus-circle"></i>
+          <i class="fas fa-file-invoice-dollar"></i>
           Create Invoice
         </h2>
         <button class="close-btn" @click="closeModal">
@@ -12,18 +13,18 @@
         </button>
       </div>
 
+      <!-- Form -->
       <form @submit.prevent="submitInvoice" class="modal-form">
-        <!-- Party Selection -->
+        <!-- Customer -->
         <div class="form-group">
-          <label for="party" class="form-label">Customer *</label>
-          <select 
-            id="party"
-            v-model="formData.Party_ID" 
-            class="form-input"
-            required
-          >
+          <label for="customer" class="form-label">Customer *</label>
+          <select id="customer" v-model="formData.Party_ID" class="form-input" required>
             <option :value="null">Select a customer</option>
-            <option v-for="party in customers" :key="party.Party_ID" :value="party.Party_ID">
+            <option
+              v-for="party in customers"
+              :key="party.Party_ID"
+              :value="party.Party_ID"
+            >
               {{ party.Name }}
             </option>
           </select>
@@ -32,10 +33,10 @@
         <!-- Date -->
         <div class="form-group">
           <label for="date" class="form-label">Date *</label>
-          <input 
+          <input
             id="date"
-            v-model="formData.Date" 
-            type="date" 
+            v-model="formData.Date"
+            type="date"
             class="form-input"
             required
           />
@@ -44,10 +45,10 @@
         <!-- GST Rate -->
         <div class="form-group">
           <label for="gst-rate" class="form-label">GST Rate (%) *</label>
-          <input 
+          <input
             id="gst-rate"
-            v-model.number="formData.GST_Rate" 
-            type="number" 
+            v-model.number="formData.GST_Rate"
+            type="number"
             min="0"
             max="100"
             step="0.01"
@@ -60,28 +61,36 @@
         <div class="form-group">
           <label class="form-label">Line Items *</label>
           <div class="line-items-section">
-            <div v-for="(item, index) in formData.Line_Items" :key="index" class="line-item">
+            <div
+              v-for="(item, index) in formData.Line_Items"
+              :key="index"
+              class="line-item"
+            >
               <div class="line-item-grid">
                 <div class="form-group">
                   <label class="form-label small">Item *</label>
-                  <select 
-                    v-model="item.Item_ID" 
+                  <select
+                    v-model="item.Item_ID"
                     @change="onItemSelect(index)"
                     class="form-input"
                     required
                   >
                     <option :value="0">Select an item</option>
-                    <option v-for="availableItem in items" :key="availableItem.Item_ID" :value="availableItem.Item_ID">
-                      {{ availableItem.Name }} ({{ availableItem.Unit || 'pcs' }})
+                    <option
+                      v-for="availableItem in items"
+                      :key="availableItem.Item_ID"
+                      :value="availableItem.Item_ID"
+                    >
+                      {{ availableItem.Name }}
                     </option>
                   </select>
                 </div>
 
                 <div class="form-group">
                   <label class="form-label small">Quantity *</label>
-                  <input 
-                    v-model.number="item.Quantity" 
-                    type="number" 
+                  <input
+                    v-model.number="item.Quantity"
+                    type="number"
                     min="0.01"
                     step="0.01"
                     class="form-input"
@@ -91,9 +100,9 @@
 
                 <div class="form-group">
                   <label class="form-label small">Rate *</label>
-                  <input 
-                    v-model.number="item.Rate" 
-                    type="number" 
+                  <input
+                    v-model.number="item.Rate"
+                    type="number"
                     min="0"
                     step="0.01"
                     class="form-input"
@@ -103,9 +112,9 @@
 
                 <div class="form-group">
                   <label class="form-label small">Discount</label>
-                  <input 
-                    v-model.number="item.Discount" 
-                    type="number" 
+                  <input
+                    v-model.number="item.Discount"
+                    type="number"
                     min="0"
                     step="0.01"
                     class="form-input"
@@ -115,15 +124,15 @@
 
                 <div class="form-group">
                   <label class="form-label small">Line Total</label>
-                  <input 
-                    :value="calculateLineTotal(item)" 
-                    type="number" 
+                  <input
+                    :value="calculateLineTotal(item)"
+                    type="number"
                     class="form-input"
                     disabled
                   />
                 </div>
 
-                <button 
+                <button
                   v-if="formData.Line_Items.length > 1"
                   type="button"
                   class="btn-remove"
@@ -134,24 +143,20 @@
               </div>
             </div>
 
-            <button 
-              type="button" 
-              class="btn-add-item"
-              @click="addLineItem"
-            >
+            <button type="button" class="btn-add-item" @click="addLineItem">
               <i class="fas fa-plus"></i>
               Add Item
             </button>
           </div>
         </div>
 
-        <!-- Payment Mode (Optional) -->
+        <!-- Payment Mode -->
         <div class="form-group">
           <label for="payment-mode" class="form-label">Payment Mode</label>
-          <input 
+          <input
             id="payment-mode"
-            v-model="formData.Payment_Mode" 
-            type="text" 
+            v-model="formData.Payment_Mode"
+            type="text"
             class="form-input"
             placeholder="e.g., Cash, Bank Transfer"
           />
@@ -173,7 +178,7 @@
           </div>
         </div>
 
-        <!-- Form Actions -->
+        <!-- Actions -->
         <div class="form-actions">
           <button type="button" class="btn-cancel" @click="closeModal">
             Cancel
@@ -194,12 +199,11 @@ import { ref, computed, onMounted } from 'vue';
 import { useTransactionStore, type LineItem } from '@/store/transactionStore';
 
 const emit = defineEmits<{
-  'close': [];
+  close: [];
   'invoice-created': [];
 }>();
 
-const transactionStore = useTransactionStore();
-
+const store = useTransactionStore();
 const loading = ref(false);
 const customers = ref<any[]>([]);
 const items = ref<any[]>([]);
@@ -216,392 +220,255 @@ const formData = ref<FormData>({
   Party_ID: null,
   Date: new Date().toISOString().split('T')[0],
   GST_Rate: 18,
-  Line_Items: [
-    {
-      Item_ID: 0,
-      Item_Name: '',
-      Quantity: 1,
-      Rate: 0,
-      Discount: 0,
-      Line_Total: 0,
-    },
-  ],
+  Line_Items: [{ Item_ID: 0, Item_Name: '', Quantity: 1, Rate: 0, Discount: 0, Line_Total: 0 }],
 });
 
 onMounted(async () => {
   try {
-    // Fetch customers (parties with type Customer or Both)
-    const response = await fetch('http://localhost:3000/api/party', {
-      credentials: 'include'
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      // Filter only customers and parties with Both type
-      customers.value = data.parties.filter((p: any) => 
-        p.Type === 'Customer' || p.Type === 'Both'
-      );
+    const res = await fetch('http://localhost:3000/api/party', { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      customers.value = data.parties.filter((p: any) => p.Type === 'Customer' || p.Type === 'Both');
     }
-
-    // Fetch items
-    const itemsResponse = await fetch('http://localhost:3000/api/item', {
-      credentials: 'include'
-    });
-    
-    if (itemsResponse.ok) {
-      const itemsData = await itemsResponse.json();
+    const itemsRes = await fetch('http://localhost:3000/api/item', { credentials: 'include' });
+    if (itemsRes.ok) {
+      const itemsData = await itemsRes.json();
       items.value = itemsData.items || [];
     }
-  } catch (error) {
-    console.error('Failed to fetch data:', error);
+  } catch (err) {
+    console.error('Failed to fetch data:', err);
   }
 });
 
 const onItemSelect = (index: number) => {
-  const selectedItemId = formData.value.Line_Items[index].Item_ID;
-  if (selectedItemId) {
-    const selectedItem = items.value.find(item => item.Item_ID === selectedItemId);
-    if (selectedItem) {
-      formData.value.Line_Items[index].Item_Name = selectedItem.Name;
-      // Pre-fill rate with Selling_Price or Sale_Price from backend
-      if (selectedItem.Selling_Price) {
-        formData.value.Line_Items[index].Rate = selectedItem.Selling_Price;
-      } else if (selectedItem.Sale_Price) {
-        formData.value.Line_Items[index].Rate = selectedItem.Sale_Price;
-      }
-    }
+  const selected = items.value.find(i => i.Item_ID === formData.value.Line_Items[index].Item_ID);
+  if (selected) {
+    formData.value.Line_Items[index].Item_Name = selected.Name;
+    formData.value.Line_Items[index].Rate = selected.Selling_Price || selected.Sale_Price || 0;
   }
 };
 
-const calculateLineTotal = (item: LineItem): number => {
-  const quantity = item.Quantity || 0;
-  const rate = item.Rate || 0;
-  const discount = item.Discount || 0;
-  return (quantity * rate) - discount;
-};
+const calculateLineTotal = (item: LineItem) => (item.Quantity || 0) * (item.Rate || 0) - (item.Discount || 0);
+const subtotal = computed(() => formData.value.Line_Items.reduce((sum, i) => sum + calculateLineTotal(i), 0));
+const taxAmount = computed(() => subtotal.value * (formData.value.GST_Rate / 100));
+const total = computed(() => subtotal.value + taxAmount.value);
+const formatCurrency = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
 
-const subtotal = computed(() => {
-  return formData.value.Line_Items.reduce((sum, item) => sum + calculateLineTotal(item), 0);
-});
-
-const taxAmount = computed(() => {
-  return subtotal.value * (formData.value.GST_Rate / 100);
-});
-
-const total = computed(() => {
-  return subtotal.value + taxAmount.value;
-});
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value);
-};
-
-const addLineItem = () => {
-  formData.value.Line_Items.push({
-    Item_ID: 0,
-    Item_Name: '',
-    Quantity: 1,
-    Rate: 0,
-    Discount: 0,
-    Line_Total: 0,
-  });
-};
-
-const removeLineItem = (index: number) => {
-  formData.value.Line_Items.splice(index, 1);
-};
+const addLineItem = () => formData.value.Line_Items.push({ Item_ID: 0, Item_Name: '', Quantity: 1, Rate: 0, Discount: 0, Line_Total: 0 });
+const removeLineItem = (index: number) => formData.value.Line_Items.splice(index, 1);
 
 const submitInvoice = async () => {
-  if (!formData.value.Party_ID) {
-    alert('Please select a customer');
-    return;
-  }
-
-  if (formData.value.Line_Items.length === 0) {
-    alert('Please add at least one item');
-    return;
-  }
-
-  // Validate that all items are selected
-  const hasUnselectedItem = formData.value.Line_Items.some(item => item.Item_ID === 0);
-  if (hasUnselectedItem) {
-    alert('Please select all items');
-    return;
-  }
-
+  if (!formData.value.Party_ID) return alert('Please select a customer');
+  if (formData.value.Line_Items.some(i => !i.Item_ID)) return alert('Please select all items');
   loading.value = true;
   try {
     const payload = {
-      Party_ID: formData.value.Party_ID,
-      Date: formData.value.Date,
-      GST_Rate: formData.value.GST_Rate,
-      Line_Items: formData.value.Line_Items.map(item => ({
-        Item_ID: item.Item_ID,
-        Item_Name: item.Item_Name,
-        Quantity: item.Quantity || 0,
-        Rate: item.Rate || 0,
-        Discount: item.Discount || 0,
-        Line_Total: calculateLineTotal(item),
-      })),
-      Payment_Mode: formData.value.Payment_Mode || undefined,
+      ...formData.value,
+      Line_Items: formData.value.Line_Items.map(i => ({ ...i, Line_Total: calculateLineTotal(i) })),
     };
-
-    await transactionStore.createInvoice(payload);
+    await store.createInvoice(payload);
     emit('invoice-created');
     emit('close');
   } catch (err) {
     console.error('Failed to create invoice:', err);
-    const errorMessage = err instanceof Error ? err.message : 'Failed to create invoice. Please try again.';
-    alert(errorMessage);
+    alert('Failed to create invoice. Please try again.');
   } finally {
     loading.value = false;
   }
 };
 
-const closeModal = () => {
-  emit('close');
-};
+const closeModal = () => emit('close');
 </script>
 
 <style lang="scss" scoped>
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding: 2rem;
   z-index: 1000;
-  padding: 1rem;
+  overflow-y: auto;
+}
 
-  .modal-content {
-    background: #fff;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 900px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 
-    .modal-header {
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #eee;
+
+    .modal-title {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 1.5rem;
-      border-bottom: 1px solid #eee;
-      position: sticky;
-      top: 0;
-      background: #fff;
-      z-index: 10;
+      gap: 0.5rem;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1a1a1a;
 
-      .modal-title {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #1a1a1a;
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
+      i {
+        color: #007bff;
+      }
+    }
 
-        i {
-          color: #007bff;
-        }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #999;
+      cursor: pointer;
+      &:hover {
+        color: #333;
+      }
+    }
+  }
+
+  .modal-form {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+
+      .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
       }
 
-      .close-btn {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        color: #999;
-        cursor: pointer;
-        padding: 0;
-        transition: color 0.3s ease;
+      .form-input {
+        padding: 0.7rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
 
-        &:hover {
-          color: #333;
+        &:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
         }
       }
     }
 
-    .modal-form {
-      padding: 1.5rem;
+    .line-items-section {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 0.6rem;
 
-      .form-group {
-        display: flex;
-        flex-direction: column;
+      .line-item {
+        background: #fafafa;
+        border-radius: 6px;
+        padding: 0.8rem;
 
-        .form-label {
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: #333;
-          margin-bottom: 0.5rem;
+        .line-item-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          gap: 0.6rem;
+          align-items: end;
 
-          &.small {
-            font-size: 0.8rem;
-          }
-        }
-
-        .form-input {
-          padding: 0.7rem;
-          border: 1px solid #ddd;
-          border-radius: 6px;
-          font-size: 0.95rem;
-          font-family: inherit;
-          transition: all 0.3s ease;
-
-          &:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-          }
-
-          &:disabled {
-            background: #f5f5f5;
-            color: #999;
-          }
-        }
-      }
-
-      .line-items-section {
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-
-        .line-item {
-          padding: 1rem;
-          background: #f9f9f9;
-          border-radius: 6px;
-          border: 1px solid #eee;
-
-          .line-item-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
-            gap: 0.8rem;
-            align-items: flex-end;
-
-            .form-group {
-              margin: 0;
-            }
-
-            .btn-remove {
-              background: #dc3545;
-              color: white;
-              border: none;
-              border-radius: 6px;
-              padding: 0.7rem;
-              cursor: pointer;
-              transition: background 0.3s ease;
-              height: 40px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-
-              &:hover {
-                background: #c82333;
-              }
-            }
-          }
-        }
-
-        .btn-add-item {
-          background: #f0f2f5;
-          color: #007bff;
-          border: 2px dashed #007bff;
-          border-radius: 6px;
-          padding: 0.8rem;
-          cursor: pointer;
-          font-weight: 600;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-
-          &:hover {
-            background: #e7eef7;
-          }
-        }
-      }
-
-      .summary-section {
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 1rem;
-        background: #f9f9f9;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-
-        .summary-row {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.95rem;
-
-          &.total {
-            border-top: 2px solid #ddd;
-            padding-top: 0.5rem;
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #1a1a1a;
-          }
-        }
-      }
-
-      .form-actions {
-        display: flex;
-        gap: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #eee;
-
-        button {
-          flex: 1;
-          padding: 0.8rem;
-          border: none;
-          border-radius: 6px;
-          font-size: 0.95rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-
-          &.btn-cancel {
-            background: #f0f2f5;
-            color: #333;
+          .btn-remove {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem;
+            cursor: pointer;
+            transition: 0.3s;
 
             &:hover {
-              background: #e9ecef;
+              background: #0056b3;
             }
           }
+        }
+      }
 
-          &.btn-submit {
-            background: #007bff;
-            color: white;
+      .btn-add-item {
+        background: #f0f2f5;
+        color: #007bff;
+        border: 2px dashed #007bff;
+        border-radius: 6px;
+        padding: 0.8rem;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
 
-            &:hover:not(:disabled) {
-              background: #0056b3;
-              transform: translateY(-2px);
-              box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-            }
+        &:hover {
+          background: #e7eef7;
+        }
+      }
+    }
 
-            &:disabled {
-              opacity: 0.6;
-              cursor: not-allowed;
-            }
+    .summary-section {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 1rem;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+
+        &.total {
+          font-weight: 700;
+          font-size: 1.1rem;
+          border-top: 2px solid #ddd;
+          padding-top: 0.5rem;
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+
+      button {
+        flex: 1;
+        padding: 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+
+        &.btn-cancel {
+          background: #f0f2f5;
+          &:hover {
+            background: #e9ecef;
+          }
+        }
+
+        &.btn-submit {
+          background: #007bff;
+          color: #fff;
+          &:hover:not(:disabled) {
+            background: #0056b3;
+          }
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
           }
         }
       }
@@ -611,21 +478,13 @@ const closeModal = () => {
 
 @media (max-width: 768px) {
   .modal-overlay {
+    padding: 1rem;
     .modal-content {
-      max-width: 100%;
+      width: 100%;
       max-height: 100vh;
-
-      .modal-form {
-        padding: 1rem;
-        gap: 1rem;
-
-        .line-items-section {
-          .line-item {
-            .line-item-grid {
-              grid-template-columns: 1fr;
-            }
-          }
-        }
+      overflow-y: auto;
+      .line-item-grid {
+        grid-template-columns: 1fr;
       }
     }
   }
