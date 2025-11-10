@@ -6,7 +6,8 @@ const {
   createPurchaseBill,
   getInvoiceById,
   getAllInvoices,
-  getGSTSummary
+  getGSTSummary,
+  deleteTransaction
 } = require('../controllers/transactionController');
 const { protectRoute } = require('../middleware/authMiddleware');
 
@@ -31,5 +32,9 @@ router.get('/gst-summary', getGSTSummary);
 
 // GET /api/transaction/:transactionId - Get single transaction with line items
 router.get('/:transactionId', getInvoiceById);
+
+// DELETE /api/transaction/:transactionId - Soft delete transaction (reverses stock)
+router.delete('/:transactionId', deleteTransaction);
+
 
 module.exports = router;

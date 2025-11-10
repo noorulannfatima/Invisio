@@ -89,7 +89,6 @@ const transactionAPI = {
         body: JSON.stringify(payload)
       });
 
-      // Check if response is JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         throw new Error(`Server returned non-JSON response (${response.status}). Check if API endpoint exists.`);
@@ -222,6 +221,34 @@ const transactionAPI = {
       console.error('getGSTSummary API error:', error);
       throw error;
     }
+  },
+
+  async deleteTransaction(transactionId: number): Promise<{ message: string; deleted: any }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${transactionId}`, {
+        method: 'DELETE',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server returned non-JSON response (${response.status}). Check if API endpoint exists.`);
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('deleteTransaction API error:', error);
+      throw error;
+    }
   }
 };
 
@@ -346,6 +373,36 @@ export const useTransactionStore = defineStore('transaction', () => {
     }
   };
 
+  /**
+   * Soft delete a transaction (marks as deleted, reverses stock)
+   * @param transactionId - The ID of the transaction to delete
+   * @returns Promise that resolves when deletion is complete
+   */
+  const deleteTransaction = async (transactionId: number): Promise<void> => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const result = await transactionAPI.deleteTransaction(transactionId);
+      
+      // Remove from local state
+      invoices.value = invoices.value.filter(inv => inv.Transaction_ID !== transactionId);
+      
+      // Clear current invoice if it was deleted
+      if (currentInvoice.value?.Transaction_ID === transactionId) {
+        currentInvoice.value = null;
+      }
+      
+      console.log('Transaction deleted successfully:', result.message);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      error.value = errorMsg;
+      console.error('Store deleteTransaction error:', errorMsg);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const setFilters = (newFilters: TransactionFilters): void => {
     filters.value = { ...filters.value, ...newFilters };
   };
@@ -386,6 +443,7 @@ export const useTransactionStore = defineStore('transaction', () => {
     fetchInvoiceById,
     fetchAllInvoices,
     fetchGSTSummary,
+    deleteTransaction,
     setFilters,
     clearFilters,
     clearError,

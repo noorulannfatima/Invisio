@@ -1,4 +1,4 @@
-<!--/components/Transaction/CreateInvoiceModal.vue-->
+<!-- components/Transaction/CreateInvoiceModal.vue-->
 <template>
   <div class="modal-overlay" @click="closeModal">
     <div class="modal-content" @click.stop>
@@ -63,7 +63,7 @@
             <div v-for="(item, index) in formData.Line_Items" :key="index" class="line-item">
               <div class="line-item-grid">
                 <div class="form-group">
-                  <label class="form-label small">Item</label>
+                  <label class="form-label small">Item *</label>
                   <select 
                     v-model="item.Item_ID" 
                     @change="onItemSelect(index)"
@@ -72,17 +72,17 @@
                   >
                     <option :value="0">Select an item</option>
                     <option v-for="availableItem in items" :key="availableItem.Item_ID" :value="availableItem.Item_ID">
-                      {{ availableItem.Name }} ({{ availableItem.Unit }})
+                      {{ availableItem.Name }} ({{ availableItem.Unit || 'pcs' }})
                     </option>
                   </select>
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label small">Quantity</label>
+                  <label class="form-label small">Quantity *</label>
                   <input 
                     v-model.number="item.Quantity" 
                     type="number" 
-                    min="0"
+                    min="0.01"
                     step="0.01"
                     class="form-input"
                     required
@@ -90,7 +90,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label small">Rate</label>
+                  <label class="form-label small">Rate *</label>
                   <input 
                     v-model.number="item.Rate" 
                     type="number" 
@@ -109,6 +109,7 @@
                     min="0"
                     step="0.01"
                     class="form-input"
+                    placeholder="0.00"
                   />
                 </div>
 
@@ -191,8 +192,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useTransactionStore, type LineItem } from '@/store/transactionStore';
-import { usePartyStore } from '@/store/partyStore';
-import { useItemStore } from '@/store/itemStore';
 
 const emit = defineEmits<{
   'close': [];
@@ -200,10 +199,10 @@ const emit = defineEmits<{
 }>();
 
 const transactionStore = useTransactionStore();
-const partyStore = usePartyStore();
-const itemStore = useItemStore();
 
 const loading = ref(false);
+const customers = ref<any[]>([]);
+const items = ref<any[]>([]);
 
 interface FormData {
   Party_ID: number | null;
@@ -229,19 +228,32 @@ const formData = ref<FormData>({
   ],
 });
 
-// Computed properties for customers and items
-const customers = computed(() => partyStore.getCustomers());
-const items = computed(() => itemStore.items);
-
 onMounted(async () => {
-  // Fetch customers and items
   try {
-    await Promise.all([
-      partyStore.fetchAllParties({ type: 'Customer' }),
-      itemStore.fetchAllItems()
-    ]);
-  } catch (err) {
-    console.error('Failed to fetch data:', err);
+    // Fetch customers (parties with type Customer or Both)
+    const response = await fetch('http://localhost:3000/api/party', {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      // Filter only customers and parties with Both type
+      customers.value = data.parties.filter((p: any) => 
+        p.Type === 'Customer' || p.Type === 'Both'
+      );
+    }
+
+    // Fetch items
+    const itemsResponse = await fetch('http://localhost:3000/api/item', {
+      credentials: 'include'
+    });
+    
+    if (itemsResponse.ok) {
+      const itemsData = await itemsResponse.json();
+      items.value = itemsData.items || [];
+    }
+  } catch (error) {
+    console.error('Failed to fetch data:', error);
   }
 });
 
@@ -251,13 +263,21 @@ const onItemSelect = (index: number) => {
     const selectedItem = items.value.find(item => item.Item_ID === selectedItemId);
     if (selectedItem) {
       formData.value.Line_Items[index].Item_Name = selectedItem.Name;
-      formData.value.Line_Items[index].Rate = selectedItem.Selling_Price;
+      // Pre-fill rate with Selling_Price or Sale_Price from backend
+      if (selectedItem.Selling_Price) {
+        formData.value.Line_Items[index].Rate = selectedItem.Selling_Price;
+      } else if (selectedItem.Sale_Price) {
+        formData.value.Line_Items[index].Rate = selectedItem.Sale_Price;
+      }
     }
   }
 };
 
 const calculateLineTotal = (item: LineItem): number => {
-  return (item.Quantity * item.Rate) - item.Discount;
+  const quantity = item.Quantity || 0;
+  const rate = item.Rate || 0;
+  const discount = item.Discount || 0;
+  return (quantity * rate) - discount;
 };
 
 const subtotal = computed(() => {
@@ -321,19 +341,21 @@ const submitInvoice = async () => {
       Line_Items: formData.value.Line_Items.map(item => ({
         Item_ID: item.Item_ID,
         Item_Name: item.Item_Name,
-        Quantity: item.Quantity,
-        Rate: item.Rate,
-        Discount: item.Discount,
+        Quantity: item.Quantity || 0,
+        Rate: item.Rate || 0,
+        Discount: item.Discount || 0,
         Line_Total: calculateLineTotal(item),
       })),
-      Payment_Mode: formData.value.Payment_Mode,
+      Payment_Mode: formData.value.Payment_Mode || undefined,
     };
 
     await transactionStore.createInvoice(payload);
     emit('invoice-created');
+    emit('close');
   } catch (err) {
     console.error('Failed to create invoice:', err);
-    alert('Failed to create invoice. Please try again.');
+    const errorMessage = err instanceof Error ? err.message : 'Failed to create invoice. Please try again.';
+    alert(errorMessage);
   } finally {
     loading.value = false;
   }

@@ -606,10 +606,157 @@ const getGSTSummary = async (req, res) => {
   }
 };
 
+// Delete (soft delete) transaction and reverse stock
+const deleteTransaction = async (req, res) => {
+  let t;
+  try {
+    t = await sequelize.transaction();
+    
+    const userId = req.user.User_ID;
+    const { transactionId } = req.params;
+
+    console.log('=== DELETE TRANSACTION REQUEST ===');
+    console.log('User ID:', userId);
+    console.log('Transaction ID:', transactionId);
+
+    // Validate transaction ID
+    if (!transactionId || isNaN(transactionId)) {
+      await t.rollback();
+      return res.status(400).json({ message: "Valid Transaction ID is required" });
+    }
+
+    // Get user's company
+    const company = await Company.findOne({
+      where: { User_ID: userId, is_deleted: false },
+      transaction: t
+    });
+
+    if (!company) {
+      await t.rollback();
+      return res.status(400).json({ message: "User must have an active company" });
+    }
+
+    // Find the transaction with line items
+    const transactionRecord = await Transaction.findOne({
+      where: {
+        Transaction_ID: transactionId,
+        Company_ID: company.Company_ID,
+        Is_Deleted: false
+      },
+      include: [
+        {
+          model: TransactionLineItem,
+          as: 'Line_Items',
+          attributes: ['Line_ID', 'Item_ID', 'Quantity']
+        }
+      ],
+      transaction: t
+    });
+
+    if (!transactionRecord) {
+      await t.rollback();
+      return res.status(404).json({ message: "Transaction not found or already deleted" });
+    }
+
+    console.log('Transaction found:', transactionRecord.Type, 'Status:', transactionRecord.Status);
+
+    // Check if transaction can be deleted
+    if (transactionRecord.Status === 'Cancelled') {
+      await t.rollback();
+      return res.status(400).json({ 
+        message: "Cannot delete a cancelled transaction. It's already inactive." 
+      });
+    }
+
+    // Reverse stock for each line item
+    console.log('Reversing stock for line items...');
+    for (const lineItem of transactionRecord.Line_Items) {
+      const item = await Item.findOne({
+        where: { 
+          Item_ID: lineItem.Item_ID, 
+          Company_ID: company.Company_ID, 
+          is_deleted: false 
+        },
+        transaction: t
+      });
+
+      if (!item) {
+        console.warn(`Item ${lineItem.Item_ID} not found. Skipping stock reversal.`);
+        continue;
+      }
+
+      const quantity = parseFloat(lineItem.Quantity);
+      let newStock;
+
+      // Reverse the stock based on transaction type
+      if (transactionRecord.Type === 'Sale') {
+        // Sale decreased stock, so add it back
+        newStock = item.Current_Stock + quantity;
+        console.log(`Reversing SALE: ${item.Name} stock ${item.Current_Stock} -> ${newStock} (+${quantity})`);
+      } else if (transactionRecord.Type === 'Purchase') {
+        // Purchase increased stock, so subtract it back
+        newStock = item.Current_Stock - quantity;
+        
+        // Check if reversal would cause negative stock
+        if (newStock < 0) {
+          await t.rollback();
+          return res.status(400).json({ 
+            message: `Cannot delete transaction: Reversing would result in negative stock for item "${item.Name}". Current stock: ${item.Current_Stock}, Attempted removal: ${quantity}` 
+          });
+        }
+        console.log(`Reversing PURCHASE: ${item.Name} stock ${item.Current_Stock} -> ${newStock} (-${quantity})`);
+      } else {
+        // Estimate doesn't affect stock
+        console.log(`Estimate transaction - no stock changes for ${item.Name}`);
+        continue;
+      }
+
+      // Update item stock
+      item.Current_Stock = newStock;
+      await item.save({ transaction: t });
+    }
+
+    // Perform soft delete
+    transactionRecord.Is_Deleted = true;
+    transactionRecord.Status = 'Cancelled'; // Mark as cancelled for clarity
+    await transactionRecord.save({ transaction: t });
+
+    await t.commit();
+    console.log('Transaction deleted successfully!');
+
+    res.json({
+      message: "Transaction deleted successfully",
+      deleted: {
+        Transaction_ID: transactionRecord.Transaction_ID,
+        Type: transactionRecord.Type,
+        Total_Amount: parseFloat(transactionRecord.Total_Amount),
+        Date: transactionRecord.Date,
+        Items_Reversed: transactionRecord.Line_Items.length
+      }
+    });
+
+  } catch (error) {
+    if (t) await t.rollback();
+    console.error("=== ERROR in deleteTransaction ===");
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+
+    if (error.name === 'SequelizeDatabaseError') {
+      return res.status(500).json({
+        message: "Database error: " + error.message
+      });
+    }
+
+    res.status(500).json({ message: error.message || "Internal server error" });
+  }
+};
+
+
 module.exports = {
   createInvoice,
   createPurchaseBill,
   getInvoiceById,
   getAllInvoices,
-  getGSTSummary
+  getGSTSummary,
+  deleteTransaction
 };
