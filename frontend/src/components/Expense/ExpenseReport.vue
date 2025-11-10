@@ -21,7 +21,7 @@
         <div class="report-content">
           <div class="report-label">Total Expenses</div>
           <div class="report-value">
-            ₹{{ formatCurrency(expenseStore.expenseReport.Summary.Total_Expenses) }}
+            Rs {{ formatCurrency(expenseStore.expenseReport.Summary.Total_Expenses) }}
           </div>
         </div>
       </div>
@@ -57,7 +57,7 @@
         <div class="report-content">
           <div class="report-label">Avg per Transaction</div>
           <div class="report-value">
-            ₹{{ formatCurrency(getAverage()) }}
+            Rs {{ formatCurrency(getAverage()) }}
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@
           </div>
 
           <div class="category-footer">
-            <span class="amount">₹{{ formatCurrency(cat.Amount) }}</span>
+            <span class="amount">Rs {{ formatCurrency(cat.Amount) }}</span>
             <span class="percentage-text">{{ cat.Percentage.toFixed(1) }}% of total</span>
           </div>
         </div>
@@ -130,7 +130,7 @@
         >
           <div class="col-rank">{{ index + 1 }}</div>
           <div class="col-name">{{ cat.Category }}</div>
-          <div class="col-amount">₹{{ formatCurrency(cat.Amount) }}</div>
+          <div class="col-amount">Rs {{ formatCurrency(cat.Amount) }}</div>
           <div class="col-percentage">
             <div class="percentage-visual">
               <div

@@ -37,7 +37,7 @@
               <i class="fas fa-money-bill"></i>
               Amount
             </div>
-            <div class="detail-value amount">₹{{ formatCurrency(expense.Amount) }}</div>
+            <div class="detail-value amount">Rs{{ formatCurrency(expense.Amount) }}</div>
           </div>
 
           <div class="detail-card">

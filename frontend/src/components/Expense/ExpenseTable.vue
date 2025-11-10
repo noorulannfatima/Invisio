@@ -26,7 +26,7 @@
               </span>
             </td>
             <td class="amount-cell">
-              ₹{{ formatCurrency(expense.Amount) }}
+              Rs {{ formatCurrency(expense.Amount) }}
             </td>
             <td class="payment-cell">
               <span v-if="expense.Payment_Mode" class="payment-badge">

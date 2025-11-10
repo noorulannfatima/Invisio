@@ -1,45 +1,59 @@
-
 // controllers/transactionController.js
-const { Company, Party, Item, Transaction, TransactionLineItem } = require('../models');
-const { Op, sequelize } = require('sequelize');
+const { Company, Party, Item, Transaction, TransactionLineItem, sequelize } = require('../models');
+const { Op } = require('sequelize');
 
 // Create invoice (Sale transaction with line items)
 const createInvoice = async (req, res) => {
-  const t = await sequelize.transaction();
+  let t;
   try {
+    // Start transaction
+    t = await sequelize.transaction();
+    
     const userId = req.user.User_ID;
     const { Party_ID, Date, Payment_Mode, Line_Items, GST_Rate } = req.body;
 
+    console.log('=== CREATE INVOICE REQUEST ===');
+    console.log('User ID:', userId);
+    console.log('Request Body:', JSON.stringify(req.body, null, 2));
+
     // Validate input
     if (!Party_ID || !Line_Items || !Array.isArray(Line_Items) || Line_Items.length === 0) {
+      await t.rollback();
       return res.status(400).json({ 
         message: "Party_ID and Line_Items array (non-empty) are required" 
       });
     }
 
-    if (!GST_Rate || isNaN(GST_Rate) || GST_Rate < 0 || GST_Rate > 100) {
+    if (GST_Rate === undefined || isNaN(GST_Rate) || GST_Rate < 0 || GST_Rate > 100) {
+      await t.rollback();
       return res.status(400).json({ message: "Valid GST_Rate (0-100) is required" });
     }
 
     // Get user's company
+    console.log('Fetching company for user:', userId);
     const company = await Company.findOne({
-      where: { User_ID: userId, is_deleted: false }
-    }, { transaction: t });
+      where: { User_ID: userId, is_deleted: false },
+      transaction: t
+    });
 
     if (!company) {
       await t.rollback();
       return res.status(400).json({ message: "User must have an active company" });
     }
+    console.log('Company found:', company.Company_ID);
 
     // Verify party belongs to company
+    console.log('Fetching party:', Party_ID);
     const party = await Party.findOne({
-      where: { Party_ID, Company_ID: company.Company_ID, is_deleted: false }
-    }, { transaction: t });
+      where: { Party_ID, Company_ID: company.Company_ID, is_deleted: false },
+      transaction: t
+    });
 
     if (!party) {
       await t.rollback();
       return res.status(404).json({ message: "Party not found" });
     }
+    console.log('Party found:', party.Name, party.Type);
 
     // Validate party type
     if (party.Type !== 'Customer' && party.Type !== 'Both') {
@@ -51,23 +65,29 @@ const createInvoice = async (req, res) => {
     let subtotal = 0;
     const processedLineItems = [];
 
-    for (const lineItem of Line_Items) {
-      if (!lineItem.Item_ID || !lineItem.Quantity || !lineItem.Rate) {
+    console.log('Processing line items...');
+    for (let i = 0; i < Line_Items.length; i++) {
+      const lineItem = Line_Items[i];
+      console.log(`Line item ${i + 1}:`, lineItem);
+
+      if (!lineItem.Item_ID || !lineItem.Quantity || lineItem.Rate === undefined) {
         await t.rollback();
         return res.status(400).json({ 
-          message: "Each line item must have Item_ID, Quantity, and Rate" 
+          message: `Line item ${i + 1} must have Item_ID, Quantity, and Rate` 
         });
       }
 
       // Fetch item
       const item = await Item.findOne({
-        where: { Item_ID: lineItem.Item_ID, Company_ID: company.Company_ID, is_deleted: false }
-      }, { transaction: t });
+        where: { Item_ID: lineItem.Item_ID, Company_ID: company.Company_ID, is_deleted: false },
+        transaction: t
+      });
 
       if (!item) {
         await t.rollback();
         return res.status(404).json({ message: `Item ${lineItem.Item_ID} not found` });
       }
+      console.log(`Item found: ${item.Name}, Stock: ${item.Current_Stock}`);
 
       const quantity = parseFloat(lineItem.Quantity);
       const rate = parseFloat(lineItem.Rate);
@@ -92,7 +112,13 @@ const createInvoice = async (req, res) => {
     const totalTax = (taxableAmount * GST_Rate) / 100;
     const totalAmount = taxableAmount + totalTax;
 
+    console.log('Financial Summary:');
+    console.log('Subtotal:', subtotal);
+    console.log('Tax Amount:', totalTax);
+    console.log('Total Amount:', totalAmount);
+
     // Create transaction header
+    console.log('Creating transaction header...');
     const transaction = await Transaction.create({
       Company_ID: company.Company_ID,
       Party_ID: party.Party_ID,
@@ -104,7 +130,10 @@ const createInvoice = async (req, res) => {
       Is_Deleted: false
     }, { transaction: t });
 
+    console.log('Transaction created with ID:', transaction.Transaction_ID);
+
     // Create line items and update stock
+    console.log('Creating line items and updating stock...');
     for (const lineItem of processedLineItems) {
       await TransactionLineItem.create({
         Transaction_ID: transaction.Transaction_ID,
@@ -117,11 +146,15 @@ const createInvoice = async (req, res) => {
       }, { transaction: t });
 
       // Decrease stock for sale
-      lineItem.item.Current_Stock -= lineItem.Quantity;
+      const newStock = lineItem.item.Current_Stock - lineItem.Quantity;
+      console.log(`Updating stock for ${lineItem.Item_Name}: ${lineItem.item.Current_Stock} -> ${newStock}`);
+      
+      lineItem.item.Current_Stock = newStock;
       await lineItem.item.save({ transaction: t });
     }
 
     await t.commit();
+    console.log('Transaction committed successfully!');
 
     res.status(201).json({
       message: "Invoice created successfully",
@@ -149,8 +182,11 @@ const createInvoice = async (req, res) => {
       }
     });
   } catch (error) {
-    await t.rollback();
-    console.log("Error in createInvoice controller", error.message);
+    if (t) await t.rollback();
+    console.error("=== ERROR in createInvoice ===");
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    console.error("Error name:", error.name);
 
     if (error.name === 'SequelizeValidationError') {
       return res.status(400).json({
@@ -159,32 +195,43 @@ const createInvoice = async (req, res) => {
       });
     }
 
-    res.status(500).json({ message: error.message });
+    if (error.name === 'SequelizeDatabaseError') {
+      return res.status(500).json({
+        message: "Database error: " + error.message
+      });
+    }
+
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
 // Create purchase bill
 const createPurchaseBill = async (req, res) => {
-  const t = await sequelize.transaction();
+  let t;
   try {
+    t = await sequelize.transaction();
+    
     const userId = req.user.User_ID;
     const { Party_ID, Date, Payment_Mode, Line_Items, GST_Rate } = req.body;
 
     // Validate input
     if (!Party_ID || !Line_Items || !Array.isArray(Line_Items) || Line_Items.length === 0) {
+      await t.rollback();
       return res.status(400).json({ 
         message: "Party_ID and Line_Items array (non-empty) are required" 
       });
     }
 
-    if (!GST_Rate || isNaN(GST_Rate) || GST_Rate < 0 || GST_Rate > 100) {
+    if (GST_Rate === undefined || isNaN(GST_Rate) || GST_Rate < 0 || GST_Rate > 100) {
+      await t.rollback();
       return res.status(400).json({ message: "Valid GST_Rate (0-100) is required" });
     }
 
     // Get user's company
     const company = await Company.findOne({
-      where: { User_ID: userId, is_deleted: false }
-    }, { transaction: t });
+      where: { User_ID: userId, is_deleted: false },
+      transaction: t
+    });
 
     if (!company) {
       await t.rollback();
@@ -193,8 +240,9 @@ const createPurchaseBill = async (req, res) => {
 
     // Verify party belongs to company
     const party = await Party.findOne({
-      where: { Party_ID, Company_ID: company.Company_ID, is_deleted: false }
-    }, { transaction: t });
+      where: { Party_ID, Company_ID: company.Company_ID, is_deleted: false },
+      transaction: t
+    });
 
     if (!party) {
       await t.rollback();
@@ -212,7 +260,7 @@ const createPurchaseBill = async (req, res) => {
     const processedLineItems = [];
 
     for (const lineItem of Line_Items) {
-      if (!lineItem.Item_ID || !lineItem.Quantity || !lineItem.Rate) {
+      if (!lineItem.Item_ID || !lineItem.Quantity || lineItem.Rate === undefined) {
         await t.rollback();
         return res.status(400).json({ 
           message: "Each line item must have Item_ID, Quantity, and Rate" 
@@ -221,8 +269,9 @@ const createPurchaseBill = async (req, res) => {
 
       // Fetch item
       const item = await Item.findOne({
-        where: { Item_ID: lineItem.Item_ID, Company_ID: company.Company_ID, is_deleted: false }
-      }, { transaction: t });
+        where: { Item_ID: lineItem.Item_ID, Company_ID: company.Company_ID, is_deleted: false },
+        transaction: t
+      });
 
       if (!item) {
         await t.rollback();
@@ -309,8 +358,9 @@ const createPurchaseBill = async (req, res) => {
       }
     });
   } catch (error) {
-    await t.rollback();
-    console.log("Error in createPurchaseBill controller", error.message);
+    if (t) await t.rollback();
+    console.error("Error in createPurchaseBill:", error.message);
+    console.error("Full error:", error);
 
     if (error.name === 'SequelizeValidationError') {
       return res.status(400).json({
@@ -319,7 +369,7 @@ const createPurchaseBill = async (req, res) => {
       });
     }
 
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
@@ -381,8 +431,8 @@ const getInvoiceById = async (req, res) => {
       updatedAt: transaction.updatedAt
     });
   } catch (error) {
-    console.log("Error in getInvoiceById controller", error.message);
-    res.status(500).json({ message: error.message });
+    console.error("Error in getInvoiceById:", error.message);
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
@@ -443,7 +493,7 @@ const getAllInvoices = async (req, res) => {
       order = [['Total_Amount', 'DESC']];
     } else if (sortBy === 'amount-low') {
       order = [['Total_Amount', 'ASC']];
-    } else if (sortBy === 'oldest') {
+    } else if (sortBy === 'date-oldest') {
       order = [['Date', 'ASC']];
     }
 
@@ -473,8 +523,8 @@ const getAllInvoices = async (req, res) => {
       }))
     });
   } catch (error) {
-    console.log("Error in getAllInvoices controller", error.message);
-    res.status(500).json({ message: error.message });
+    console.error("Error in getAllInvoices:", error.message);
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
@@ -518,10 +568,9 @@ const getGSTSummary = async (req, res) => {
       ]
     });
 
-    // Calculate GST breakdown (simplified - assumes uniform GST rate)
-    let outwardSupplies = 0; // Sales
-    let inwardSupplies = 0; // Purchases
-    let totalGST = 0;
+    // Calculate GST breakdown
+    let outwardSupplies = 0;
+    let inwardSupplies = 0;
 
     transactions.forEach(txn => {
       const subtotal = txn.Line_Items.reduce((sum, item) => sum + parseFloat(item.Line_Total), 0);
@@ -533,8 +582,7 @@ const getGSTSummary = async (req, res) => {
       }
     });
 
-    // Assuming GST rate used (this is simplified; in real scenario, track per transaction)
-    const gstRate = 5; // Default 5% for demonstration
+    const gstRate = 5;
     const outputGST = (outwardSupplies * gstRate) / 100;
     const inputGST = (inwardSupplies * gstRate) / 100;
     const netGST = outputGST - inputGST;
@@ -553,8 +601,8 @@ const getGSTSummary = async (req, res) => {
       Total_Transactions: transactions.length
     });
   } catch (error) {
-    console.log("Error in getGSTSummary controller", error.message);
-    res.status(500).json({ message: error.message });
+    console.error("Error in getGSTSummary:", error.message);
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
