@@ -10,19 +10,28 @@
           <label>Start Date</label>
           <input v-model="filters.startDate" type="date" />
         </div>
+
         <div class="filter-group">
           <label>End Date</label>
           <input v-model="filters.endDate" type="date" />
         </div>
+
+        <!-- ✅ Updated Party Selector -->
         <div class="filter-group">
-          <label>Party ID *</label>
-          <input
-            v-model.number="filters.partyId"
-            type="number"
-            placeholder="Required"
-          />
+          <label>Party *</label>
+          <select v-model.number="filters.partyId">
+            <option disabled value="">Select a Party</option>
+            <option v-for="party in partyStore.parties" :key="party.Party_ID" :value="party.Party_ID">
+              {{ party.Name }} ({{ party.Type }})
+            </option>
+          </select>
         </div>
-        <button @click="fetchLedgerData" :disabled="isLoading || !filters.partyId" class="btn-fetch">
+
+        <button
+          @click="fetchLedgerData"
+          :disabled="isLoading || !filters.partyId"
+          class="btn-fetch"
+        >
           {{ isLoading ? 'Loading...' : 'Fetch Ledger' }}
         </button>
       </div>
@@ -48,22 +57,33 @@
       <div v-if="reportStore.partyLedgerReport" class="summary-grid">
         <div class="summary-item">
           <span class="label">Total Purchases</span>
-          <span class="value">Rs{{ reportStore.partyLedgerReport.Summary.Total_Purchases.toLocaleString() }}</span>
+          <span class="value">
+            Rs{{ reportStore.partyLedgerReport.Summary.Total_Purchases.toLocaleString() }}
+          </span>
         </div>
         <div class="summary-item">
           <span class="label">Total Sales</span>
-          <span class="value">Rs{{ reportStore.partyLedgerReport.Summary.Total_Sales.toLocaleString() }}</span>
+          <span class="value">
+            Rs{{ reportStore.partyLedgerReport.Summary.Total_Sales.toLocaleString() }}
+          </span>
         </div>
         <div class="summary-item">
           <span class="label">Total Expenses</span>
-          <span class="value">Rs{{ reportStore.partyLedgerReport.Summary.Total_Expenses.toLocaleString() }}</span>
+          <span class="value">
+            Rs{{ reportStore.partyLedgerReport.Summary.Total_Expenses.toLocaleString() }}
+          </span>
         </div>
         <div
           class="summary-item"
-          :class="{ positive: reportStore.partyLedgerReport.Summary.Net_Balance > 0, negative: reportStore.partyLedgerReport.Summary.Net_Balance < 0 }"
+          :class="{
+            positive: reportStore.partyLedgerReport.Summary.Net_Balance > 0,
+            negative: reportStore.partyLedgerReport.Summary.Net_Balance < 0,
+          }"
         >
           <span class="label">Net Balance</span>
-          <span class="value">Rs{{ reportStore.partyLedgerReport.Summary.Net_Balance.toLocaleString() }}</span>
+          <span class="value">
+            Rs{{ reportStore.partyLedgerReport.Summary.Net_Balance.toLocaleString() }}
+          </span>
         </div>
       </div>
 
@@ -73,7 +93,8 @@
         class="balance-status"
         :class="reportStore.partyLedgerReport.Summary.Balance_Status.toLowerCase().replace(' ', '-')"
       >
-        <strong>Status:</strong> {{ reportStore.partyLedgerReport.Summary.Balance_Status }}
+        <strong>Status:</strong>
+        {{ reportStore.partyLedgerReport.Summary.Balance_Status }}
       </div>
 
       <!-- Transactions Table -->
@@ -90,12 +111,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="txn in reportStore.partyLedgerReport.Transactions" :key="txn.Transaction_ID">
+              <tr
+                v-for="txn in reportStore.partyLedgerReport.Transactions"
+                :key="txn.Transaction_ID"
+              >
                 <td>{{ formatDate(txn.Date) }}</td>
                 <td>
-                  <span :class="['type', txn.Type.toLowerCase()]">
-                    {{ txn.Type }}
-                  </span>
+                  <span :class="['type', txn.Type.toLowerCase()]">{{ txn.Type }}</span>
                 </td>
                 <td class="amount">Rs{{ txn.Amount.toLocaleString() }}</td>
                 <td>{{ txn.Payment_Mode }}</td>
@@ -107,15 +129,16 @@
 
       <!-- No Data Message -->
       <div v-if="!isLoading && !reportStore.partyLedgerReport" class="no-data">
-        <p>Enter a Party ID and click "Fetch Ledger" to view transaction history.</p>
+        <p>Select a Party and click "Fetch Ledger" to view transaction history.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useReportStore } from '@/store/reportStore'
+import { usePartyStore } from '@/store/partyStore'
 
 interface LedgerFilters {
   startDate: string
@@ -124,6 +147,8 @@ interface LedgerFilters {
 }
 
 const reportStore = useReportStore()
+const partyStore = usePartyStore()
+
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
@@ -133,9 +158,18 @@ const filters = reactive<LedgerFilters>({
   partyId: undefined,
 })
 
+// ✅ Fetch all parties on mount
+onMounted(async () => {
+  try {
+    await partyStore.fetchAllParties()
+  } catch (err) {
+    console.error('Failed to fetch parties:', err)
+  }
+})
+
 const fetchLedgerData = async () => {
   if (!filters.partyId) {
-    error.value = 'Party ID is required'
+    error.value = 'Please select a party.'
     return
   }
 
@@ -198,7 +232,8 @@ const formatDate = (dateString: string) => {
         margin-bottom: 0.5rem;
       }
 
-      input {
+      input,
+      select {
         padding: 0.5rem;
         border: 1px solid #d1d5db;
         border-radius: 6px;
@@ -231,7 +266,7 @@ const formatDate = (dateString: string) => {
         cursor: not-allowed;
       }
     }
-  }
+  } /* ✅ Closed .filters-section properly here */
 
   .error-message {
     background: #fee2e2;
@@ -435,3 +470,4 @@ const formatDate = (dateString: string) => {
   }
 }
 </style>
+
