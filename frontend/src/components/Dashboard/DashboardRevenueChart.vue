@@ -1,4 +1,3 @@
-<!-- DashboardRevenueChart.vue-->
 <template>
   <div class="card chart-card">
     <div class="card-header">
@@ -11,53 +10,42 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import Chart from 'chart.js/auto';
-import { useCompanyStore } from '@/store/companyStore';
+import { useReportStore } from '@/store/reportStore';
 
-const companyStore = useCompanyStore();
 const revenueChartRef = ref<HTMLCanvasElement | null>(null);
 let revenueChart: Chart | null = null;
 
-onMounted(() => {
-  setTimeout(() => {
-    initRevenueChart();
-  }, 100);
-});
+const reportStore = useReportStore();
 
-watch(
-  () => companyStore.company,
-  () => {
-    if (companyStore.company && revenueChartRef.value) {
-      updateChart();
-    }
-  }
-);
+// --- Computed chart data from store ---
+const dailyBreakdown = computed(() => reportStore.salesReport?.Daily_Breakdown || []);
+const chartLabels = computed(() => dailyBreakdown.value.map(d => d.Date));
+const chartData = computed(() => dailyBreakdown.value.map(d => d.Sales));
 
+// --- Initialize chart ---
 const initRevenueChart = () => {
   if (!revenueChartRef.value) return;
-
   const ctx = revenueChartRef.value.getContext('2d');
   if (!ctx) return;
 
-  if (revenueChart) {
-    revenueChart.destroy();
-  }
+  if (revenueChart) revenueChart.destroy();
 
   revenueChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      labels: chartLabels.value,
       datasets: [
         {
           label: 'Revenue',
-          data: [0, 0, 0, 0, 0, 0],
+          data: chartData.value,
           borderColor: 'rgb(102, 126, 234)',
           backgroundColor: 'rgba(102, 126, 234, 0.1)',
           borderWidth: 2,
           fill: true,
           tension: 0.4,
-          pointRadius: 5,
+          pointRadius: 4,
           pointBackgroundColor: 'rgb(102, 126, 234)',
           pointBorderColor: '#fff',
           pointBorderWidth: 2,
@@ -72,39 +60,57 @@ const initRevenueChart = () => {
           display: true,
           labels: {
             color: '#718096',
-            font: {
-              size: 12,
-              weight: 'bold',
-            },
+            font: { size: 12, weight: 'bold' },
           },
         },
       },
       scales: {
         y: {
           beginAtZero: true,
-          grid: {
-            color: 'rgba(0, 0, 0, 0.05)',
-          },
-          ticks: {
-            color: '#718096',
-          },
+          grid: { color: 'rgba(0, 0, 0, 0.05)' },
+          ticks: { color: '#718096' },
         },
         x: {
-          grid: {
-            display: false,
-          },
-          ticks: {
-            color: '#718096',
-          },
+          grid: { display: false },
+          ticks: { color: '#718096' },
         },
       },
     },
   });
 };
 
+// --- Update chart dynamically ---
 const updateChart = () => {
-  // Chart updates automatically
+  if (!revenueChart || !dailyBreakdown.value.length) return;
+
+  revenueChart.data.labels = chartLabels.value;
+  revenueChart.data.datasets[0].data = chartData.value;
+  revenueChart.update();
 };
+
+// --- Watch for store updates ---
+watch(
+  () => reportStore.salesReport,
+  (newVal) => {
+    if (newVal?.Daily_Breakdown?.length) {
+      if (!revenueChart) initRevenueChart();
+      else updateChart();
+    }
+  },
+  { deep: true }
+);
+
+// --- Fetch data from store on mount ---
+onMounted(async () => {
+  try {
+    await reportStore.fetchSalesReport({
+      period: 'daily',
+    });
+    initRevenueChart();
+  } catch (err) {
+    console.error('Error loading sales report:', err);
+  }
+});
 </script>
 
 <style scoped lang="scss">
@@ -166,5 +172,3 @@ const updateChart = () => {
   }
 }
 </style>
-
----

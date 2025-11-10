@@ -1,29 +1,35 @@
-<!-- DashboardFinanceCard.vue--> 
 <template>
   <div class="card finance-card">
     <div class="card-header">
       <h3>Finance Overview</h3>
-      <button class="btn-icon" @click="$emit('refresh')" :disabled="isRefreshing">
+      <button class="btn-icon" @click="refreshData" :disabled="isRefreshing || isLoading">
         <i class="fas fa-sync"></i>
       </button>
     </div>
+
     <div class="card-body">
       <div class="finance-item">
         <span class="label">Total Revenue</span>
-        <span class="value">${{ formatCurrency(0) }}</span>
+        <span class="value">Rs   {{ formatCurrency(totalRevenue) }}</span>
       </div>
+
       <div class="finance-item">
         <span class="label">Total Expenses</span>
-        <span class="value">${{ formatCurrency(0) }}</span>
+        <span class="value">Rs  {{ formatCurrency(totalExpenses) }}</span>
       </div>
+
       <div class="finance-item">
         <span class="label">Net Profit</span>
-        <span class="value positive">${{ formatCurrency(0) }}</span>
+        <span :class="['value', netProfit >= 0 ? 'positive' : 'negative']">
+          Rs   {{ formatCurrency(netProfit) }}
+        </span>
       </div>
+
       <div class="finance-item">
         <span class="label">Inventory Value</span>
-        <span class="value highlight">${{ formatCurrency(itemStore.totalInventoryValue) }}</span>
+        <span class="value highlight">Rs    {{ formatCurrency(totalInventoryValue) }}</span>
       </div>
+
       <router-link to="/inventory" class="view-link">
         View Details <i class="fas fa-arrow-right"></i>
       </router-link>
@@ -32,23 +38,62 @@
 </template>
 
 <script setup lang="ts">
-import { useItemStore } from '@/store/itemStore';
+import { computed, onMounted } from 'vue';
+import { useTransactionStore } from '@/store/transactionStore';
+import { useExpenseStore } from '@/store/expenseStore';
+import { useReportStore } from '@/store/reportStore';
 
 interface Props {
   isRefreshing: boolean;
 }
-
 defineProps<Props>();
 
-defineEmits<{
-  refresh: [];
-}>();
+defineEmits<{ refresh: [] }>();
 
-const itemStore = useItemStore();
+// Stores
+const transactionStore = useTransactionStore();
+const expenseStore = useExpenseStore();
+const reportStore = useReportStore();
 
-const formatCurrency = (value: number): string => {
-  return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+// Computed values
+const totalRevenue = computed(() => transactionStore.totalSalesAmount || 0);
+const totalExpenses = computed(() => expenseStore.totalExpenses || 0);
+const totalInventoryValue = computed(() =>
+  reportStore.stockSummaryReport?.Summary?.Total_Inventory_Value || 0
+);
+
+const netProfit = computed(() => {
+  // Prefer profit-loss report if loaded
+  const report = reportStore.profitLossReport;
+  if (report?.Profit_Loss?.Net_Profit !== undefined) {
+    return report.Profit_Loss.Net_Profit;
+  }
+  // Fallback computation
+  return totalRevenue.value - totalExpenses.value;
+});
+
+const isLoading = computed(
+  () => transactionStore.loading || expenseStore.isLoading || reportStore.isLoading
+);
+
+const formatCurrency = (value: number): string =>
+  value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+// Fetch data when mounted
+const refreshData = async () => {
+  try {
+    await Promise.all([
+      transactionStore.fetchAllInvoices(),
+      expenseStore.fetchAllExpenses(),
+      reportStore.fetchStockSummaryReport({}),
+      reportStore.fetchProfitLossReport({})
+    ]);
+  } catch (err) {
+    console.error('Failed to refresh finance data:', err);
+  }
 };
+
+onMounted(refreshData);
 </script>
 
 <style scoped lang="scss">
@@ -132,6 +177,10 @@ const formatCurrency = (value: number): string => {
 
       &.positive {
         color: #38a169;
+      }
+
+      &.negative {
+        color: #e53e3e;
       }
 
       &.highlight {
