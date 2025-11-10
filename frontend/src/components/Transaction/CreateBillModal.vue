@@ -23,7 +23,7 @@
             required
           >
             <option :value="null">Select a supplier</option>
-            <option v-for="party in parties" :key="party.Party_ID" :value="party.Party_ID">
+            <option v-for="party in suppliers" :key="party.Party_ID" :value="party.Party_ID">
               {{ party.Name }}
             </option>
           </select>
@@ -63,22 +63,26 @@
             <div v-for="(item, index) in formData.Line_Items" :key="index" class="line-item">
               <div class="line-item-grid">
                 <div class="form-group">
-                  <label class="form-label small">Item Name</label>
-                  <input 
-                    v-model="item.Item_Name" 
-                    type="text" 
+                  <label class="form-label small">Item *</label>
+                  <select 
+                    v-model="item.Item_ID" 
                     class="form-input"
-                    placeholder="Item name"
+                    @change="onItemSelected(index, item.Item_ID)"
                     required
-                  />
+                  >
+                    <option :value="0">Select an item</option>
+                    <option v-for="availableItem in items" :key="availableItem.Item_ID" :value="availableItem.Item_ID">
+                      {{ availableItem.Name }}
+                    </option>
+                  </select>
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label small">Quantity</label>
+                  <label class="form-label small">Quantity *</label>
                   <input 
                     v-model.number="item.Quantity" 
                     type="number" 
-                    min="0"
+                    min="0.01"
                     step="0.01"
                     class="form-input"
                     required
@@ -86,7 +90,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label small">Rate</label>
+                  <label class="form-label small">Rate *</label>
                   <input 
                     v-model.number="item.Rate" 
                     type="number" 
@@ -105,6 +109,7 @@
                     min="0"
                     step="0.01"
                     class="form-input"
+                    placeholder="0.00"
                   />
                 </div>
 
@@ -195,7 +200,8 @@ const emit = defineEmits<{
 
 const store = useTransactionStore();
 const loading = ref(false);
-const parties = ref<any[]>([]);
+const suppliers = ref<any[]>([]);
+const items = ref<any[]>([]);
 
 interface FormData {
   Party_ID: number | null;
@@ -222,12 +228,52 @@ const formData = ref<FormData>({
 });
 
 onMounted(async () => {
-  // TODO: Fetch parties from API
-  // parties.value = await fetchParties();
+  try {
+    // Fetch suppliers (parties with type Supplier or Both)
+    const response = await fetch('http://localhost:3000/api/party', {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      // Filter only suppliers
+      suppliers.value = data.parties.filter((p: any) => 
+        p.Type === 'Supplier' || p.Type === 'Both'
+      );
+    }
+
+    // Fetch items
+    const itemsResponse = await fetch('http://localhost:3000/api/item', {
+      credentials: 'include'
+    });
+    
+    if (itemsResponse.ok) {
+      const itemsData = await itemsResponse.json();
+      items.value = itemsData.items || [];
+    }
+  } catch (error) {
+    console.error('Failed to fetch data:', error);
+  }
 });
 
+const onItemSelected = (index: number, itemId: number) => {
+  const selectedItem = items.value.find(item => item.Item_ID === itemId);
+  if (selectedItem) {
+    formData.value.Line_Items[index].Item_Name = selectedItem.Name;
+    // Pre-fill the rate with item's purchase/sale price if available
+    if (selectedItem.Purchase_Price) {
+      formData.value.Line_Items[index].Rate = selectedItem.Purchase_Price;
+    } else if (selectedItem.Sale_Price || selectedItem.Selling_Price) {
+      formData.value.Line_Items[index].Rate = selectedItem.Sale_Price || selectedItem.Selling_Price;
+    }
+  }
+};
+
 const calculateLineTotal = (item: LineItem): number => {
-  return (item.Quantity * item.Rate) - item.Discount;
+  const quantity = item.Quantity || 0;
+  const rate = item.Rate || 0;
+  const discount = item.Discount || 0;
+  return (quantity * rate) - discount;
 };
 
 const subtotal = computed(() => {
@@ -275,6 +321,13 @@ const submitBill = async () => {
     return;
   }
 
+  // Validate all line items have selected items
+  const invalidItems = formData.value.Line_Items.some(item => !item.Item_ID || item.Item_ID === 0);
+  if (invalidItems) {
+    alert('Please select an item for all line items');
+    return;
+  }
+
   loading.value = true;
   try {
     const payload = {
@@ -284,19 +337,21 @@ const submitBill = async () => {
       Line_Items: formData.value.Line_Items.map(item => ({
         Item_ID: item.Item_ID,
         Item_Name: item.Item_Name,
-        Quantity: item.Quantity,
-        Rate: item.Rate,
-        Discount: item.Discount,
+        Quantity: item.Quantity || 0,
+        Rate: item.Rate || 0,
+        Discount: item.Discount || 0,
         Line_Total: calculateLineTotal(item),
       })),
-      Payment_Mode: formData.value.Payment_Mode,
+      Payment_Mode: formData.value.Payment_Mode || undefined,
     };
 
     await store.createPurchaseBill(payload);
     emit('bill-created');
+    emit('close');
   } catch (err) {
     console.error('Failed to create bill:', err);
-    alert('Failed to create bill. Please try again.');
+    const errorMessage = err instanceof Error ? err.message : 'Failed to create bill. Please try again.';
+    alert(errorMessage);
   } finally {
     loading.value = false;
   }
@@ -339,6 +394,7 @@ const closeModal = () => {
       position: sticky;
       top: 0;
       background: #fff;
+      z-index: 10;
 
       .modal-title {
         margin: 0;
@@ -427,7 +483,7 @@ const closeModal = () => {
 
           .line-item-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
             gap: 0.8rem;
             align-items: flex-end;
 
@@ -570,5 +626,4 @@ const closeModal = () => {
     }
   }
 }
-
 </style>
