@@ -1,4 +1,3 @@
-<!-- componenets/Transaction/TransactionTable.vue-->
 <template>
   <div class="transaction-section">
     <div class="section-header">
@@ -6,17 +5,17 @@
         <i class="fas fa-list"></i>
         Recent Transactions
       </h2>
-      <button class="btn-refresh" @click="$emit('refresh')" :disabled="loading">
-        <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
+      <button class="btn-refresh" @click="refreshTransactions" :disabled="store.loading">
+        <i class="fas fa-sync-alt" :class="{ 'fa-spin': store.loading }"></i>
       </button>
     </div>
 
-    <div v-if="loading" class="loading-state">
+    <div v-if="store.loading" class="loading-state">
       <i class="fas fa-spinner fa-spin"></i>
       <p>Loading transactions...</p>
     </div>
 
-    <div v-else-if="transactions.length === 0" class="empty-state">
+    <div v-else-if="store.invoices.length === 0" class="empty-state">
       <i class="fas fa-inbox"></i>
       <p>No transactions found</p>
     </div>
@@ -34,7 +33,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="txn in transactions" :key="txn.Transaction_ID" class="transaction-row">
+          <tr 
+            v-for="txn in store.invoices" 
+            :key="txn.Transaction_ID" 
+            class="transaction-row"
+          >
             <td class="date-col">
               <span class="date-badge">{{ formatDate(txn.Date) }}</span>
             </td>
@@ -66,30 +69,83 @@
               >
                 <i class="fas fa-eye"></i>
               </button>
-              <button class="action-btn download-btn" title="Download PDF">
+
+              <button 
+                class="action-btn download-btn" 
+                @click="$emit('download-pdf', txn.Transaction_ID)"
+                title="Download PDF"
+              >
                 <i class="fas fa-download"></i>
+              </button>
+
+              <button 
+                class="action-btn delete-btn"
+                title="Delete Transaction"
+                @click="openDeleteModal(txn)"
+                :disabled="store.loading"
+              >
+                <i class="fas fa-trash-alt"></i>
               </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmDeleteModal
+      v-if="showDeleteModal"
+      :itemName="`${transactionToDelete?.Type} - ${transactionToDelete?.Party_Name} (${formatCurrency(transactionToDelete?.Total_Amount || 0)})`"
+      @confirm="handleDeleteConfirm"
+      @cancel="closeDeleteModal"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Invoice } from '@/store/transactionStore';
+import { ref } from 'vue';
+import { useTransactionStore, type Invoice } from '@/store/transactionStore';
+import ConfirmDeleteModal from '@/components/Common/ConfirmDeleteModal.vue';
 
-defineProps<{
-  transactions: Invoice[];
-  loading: boolean;
-}>();
+const store = useTransactionStore();
 
 defineEmits<{
   'view-details': [transactionId: number];
-  'refresh': [];
+  'download-pdf': [transactionId: number];
 }>();
 
+// Delete modal state
+const showDeleteModal = ref(false);
+const transactionToDelete = ref<Invoice | null>(null);
+
+// Methods
+const refreshTransactions = async () => {
+  await store.fetchAllInvoices();
+};
+
+const openDeleteModal = (transaction: Invoice) => {
+  transactionToDelete.value = transaction;
+  showDeleteModal.value = true;
+};
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false;
+  transactionToDelete.value = null;
+};
+
+const handleDeleteConfirm = async () => {
+  if (!transactionToDelete.value) return;
+  
+  try {
+    await store.deleteTransaction(transactionToDelete.value.Transaction_ID);
+    closeDeleteModal();
+  } catch (err) {
+    console.error('Failed to delete transaction:', err);
+    // Error is already handled in the store
+  }
+};
+
+// Utility functions
 const formatDate = (date: string): string => {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
@@ -107,18 +163,18 @@ const formatCurrency = (value: number): string => {
 
 const getTypeIcon = (type: string): string => {
   const icons: Record<string, string> = {
-    'Sale': 'fas fa-arrow-up',
-    'Purchase': 'fas fa-arrow-down',
-    'Estimate': 'fas fa-file-alt',
+    Sale: 'fas fa-arrow-up',
+    Purchase: 'fas fa-arrow-down',
+    Estimate: 'fas fa-file-alt',
   };
   return icons[type] || 'fas fa-exchange-alt';
 };
 
 const getStatusIcon = (status: string): string => {
   const icons: Record<string, string> = {
-    'Completed': 'fas fa-check-circle',
-    'Pending': 'fas fa-hourglass-half',
-    'Cancelled': 'fas fa-times-circle',
+    Completed: 'fas fa-check-circle',
+    Pending: 'fas fa-hourglass-half',
+    Cancelled: 'fas fa-times-circle',
   };
   return icons[status] || 'fas fa-circle';
 };
@@ -387,13 +443,22 @@ const getStatusIcon = (status: string): string => {
                 align-items: center;
                 justify-content: center;
 
-                &:hover {
+                &:hover:not(:disabled) {
                   background: #f0f2f5;
                   color: #007bff;
                 }
 
-                &.download-btn:hover {
+                &.download-btn:hover:not(:disabled) {
                   color: #28a745;
+                }
+
+                &.delete-btn:hover:not(:disabled) {
+                  color: #dc3545;
+                }
+
+                &:disabled {
+                  opacity: 0.5;
+                  cursor: not-allowed;
                 }
 
                 &:active {

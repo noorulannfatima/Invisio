@@ -6,11 +6,11 @@ import '@fortawesome/fontawesome-free/css/all.min.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 
 
-import "./assets/styles/base.scss"; // optional global styles
+import "./assets/styles/base.scss"; //  global styles
 
 const app = createApp(App);
 const pinia = createPinia();
 
-app.use(pinia);   // ✅ Add Pinia for state management
-app.use(router);  // ✅ Add router
+app.use(pinia);   // Pinia for state management
+app.use(router);  
 app.mount("#app");

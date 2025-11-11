@@ -83,6 +83,7 @@ Invisio
    │  │  │  └─ variables.scss
    │  │  └─ vue.svg
    │  ├─ components
+   │  │  ├─ .DS_Store
    │  │  ├─ Common
    │  │  │  ├─ ConfirmDeleteModal.vue
    │  │  │  ├─ Leftsidebar.vue
@@ -91,6 +92,7 @@ Invisio
    │  │  │  ├─ CreateCompanyModal.vue
    │  │  │  └─ EditCompanyModal.vue
    │  │  ├─ Dashboard
+   │  │  │  ├─ .DS_Store
    │  │  │  ├─ DashboardActionBar.vue
    │  │  │  ├─ DashboardCompanyCard.vue
    │  │  │  ├─ DashboardExpenseChart.vue
@@ -99,15 +101,13 @@ Invisio
    │  │  │  ├─ DashboardQuickStats.vue
    │  │  │  ├─ DashboardRevenueChart.vue
    │  │  │  ├─ DashboardStatCard.vue
-   │  │  │  ├─ DashboardWelcome.vue
-   │  │  │  └─ EditProfileModal.vue
+   │  │  │  └─ DashboardWelcome.vue
    │  │  ├─ Expense
    │  │  │  ├─ ExpenseDetailsModal.vue
    │  │  │  ├─ ExpenseFilters.vue
    │  │  │  ├─ ExpenseForm.vue
    │  │  │  ├─ ExpenseHeader.vue
    │  │  │  ├─ ExpenseReport.vue
-   │  │  │  ├─ ExpenseSummaryCards.vue
    │  │  │  └─ ExpenseTable.vue
    │  │  ├─ Home
    │  │  │  ├─ Contact.vue
@@ -128,12 +128,10 @@ Invisio
    │  │  │  ├─ SettingsDangerZone.vue
    │  │  │  └─ SettingsProfile.vue
    │  │  └─ Transaction
-   │  │     ├─ FinanceDateFilter.vue
-   │  │     ├─ FinanceExpenseChart.vue
-   │  │     ├─ FinanceGSTSummary.vue
-   │  │     ├─ FinanceRevenueChart.vue
-   │  │     ├─ FinanceSummaryCards.vue
-   │  │     └─ FinanceTransactionTable.vue
+   │  │     ├─ CreateBillModal.vue
+   │  │     ├─ CreateInvoiceModal.vue
+   │  │     ├─ DateFilter.vue
+   │  │     └─ TransactionTable.vue
    │  ├─ layouts
    │  │  └─ DashboardLayout.vue
    │  ├─ main.ts

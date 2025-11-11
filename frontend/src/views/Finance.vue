@@ -1,4 +1,4 @@
-<!-- views/Finance.vue-->
+<!-- /views/Finance.vue-->
 <template>
   <div class="page finance">
     <!-- Header -->
@@ -32,11 +32,21 @@
       </button>
     </div>
 
+    <!-- Success Message -->
+    <div v-if="successMessage" class="success-alert">
+      <i class="fas fa-check-circle"></i>
+      <span>{{ successMessage }}</span>
+      <button @click="successMessage = ''" class="close-btn">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
     <!-- Transactions Table -->
     <TransactionTable 
       :transactions="invoices"
       :loading="loading"
       @view-details="viewTransactionDetails"
+      @download-pdf="handleDownloadPDF"
       @refresh="fetchAllInvoices"
     />
 
@@ -53,6 +63,14 @@
       @close="showCreateBill = false"
       @bill-created="onBillCreated"
     />
+
+    <!-- Transaction Details Modal -->
+    <TransactionDetailsModal
+      v-if="showDetailsModal"
+      :transactionId="selectedTransactionId!"
+      @close="closeDetailsModal"
+      @download-pdf="handleDownloadPDF"
+    />
   </div>
 </template>
 
@@ -63,17 +81,30 @@ import TransactionTable from '@/components/Transaction/TransactionTable.vue';
 import DateFilter from '@/components/Transaction/DateFilter.vue';
 import CreateInvoiceModal from '@/components/Transaction/CreateInvoiceModal.vue';
 import CreateBillModal from '@/components/Transaction/CreateBillModal.vue';
+import TransactionDetailsModal from '@/components/Transaction/TransactionDetailsModal.vue';
+import { generateTransactionPDF } from '@/utils/pdfGenerator';
 
 const store = useTransactionStore();
 const showCreateInvoice = ref(false);
 const showCreateBill = ref(false);
+const showDetailsModal = ref(false);
+const selectedTransactionId = ref<number | null>(null);
+const successMessage = ref('');
 
 // Computed properties from store
 const invoices = computed(() => store.invoices);
 const loading = computed(() => store.loading);
 
+// Company info for PDF (you may want to fetch this from a company store)
+const companyInfo = ref({
+  name: 'Your Company Name',
+  address: '123 Business Street, City, State 12345',
+  email: 'info@yourcompany.com'
+});
+
 onMounted(async () => {
   await fetchAllInvoices();
+  // TODO: Fetch company info from company store
 });
 
 const fetchAllInvoices = async () => {
@@ -93,28 +124,59 @@ const applyDateFilter = async (filters: TransactionFilters) => {
 };
 
 const viewTransactionDetails = async (transactionId: number) => {
+  selectedTransactionId.value = transactionId;
+  showDetailsModal.value = true;
+};
+
+const closeDetailsModal = () => {
+  showDetailsModal.value = false;
+  selectedTransactionId.value = null;
+  store.clearCurrentInvoice();
+};
+
+const handleDownloadPDF = async (transactionId: number) => {
   try {
-    await store.fetchInvoiceById(transactionId);
-    // TODO: Open a modal or navigate to details page
-    console.log('View transaction:', transactionId);
+    // Fetch transaction details if not already loaded
+    if (store.currentInvoice?.Transaction_ID !== transactionId) {
+      await store.fetchInvoiceById(transactionId);
+    }
+
+    const transaction = store.currentInvoice;
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
+    await generateTransactionPDF(transaction, companyInfo.value);
+    successMessage.value = 'PDF downloaded successfully!';
+    setTimeout(() => {
+      successMessage.value = '';
+    }, 3000);
   } catch (err) {
-    console.error('Failed to fetch transaction details:', err);
+    console.error('Failed to generate PDF:', err);
+    store.error = 'Failed to generate PDF. Please try again.';
   }
 };
 
 const onInvoiceCreated = async () => {
   showCreateInvoice.value = false;
   await fetchAllInvoices();
+  successMessage.value = 'Invoice created successfully!';
+  setTimeout(() => {
+    successMessage.value = '';
+  }, 3000);
 };
 
 const onBillCreated = async () => {
   showCreateBill.value = false;
   await fetchAllInvoices();
+  successMessage.value = 'Purchase bill created successfully!';
+  setTimeout(() => {
+    successMessage.value = '';
+  }, 3000);
 };
 </script>
-
 <style lang="scss" scoped>
-@import '@/assets/styles/variables.scss';
+@use '@/assets/styles/variables.scss' as *;
 
 .page {
   margin-left: 260px;
@@ -195,16 +257,15 @@ const onBillCreated = async () => {
     }
   }
 
-  .error-alert {
-    background: rgba(220, 53, 69, 0.1);
-    border: 1px solid #dc3545;
+  .error-alert,
+  .success-alert {
     border-radius: 8px;
     padding: 1rem 1.5rem;
     margin-bottom: 2rem;
     display: flex;
     align-items: center;
     gap: 1rem;
-    color: #dc3545;
+    animation: slideDown 0.3s ease;
 
     i {
       font-size: 1.2rem;
@@ -215,15 +276,46 @@ const onBillCreated = async () => {
       margin-left: auto;
       background: none;
       border: none;
-      color: #dc3545;
       cursor: pointer;
       font-size: 1.2rem;
       padding: 0;
+      transition: opacity 0.3s ease;
 
       &:hover {
         opacity: 0.7;
       }
     }
+  }
+
+  .error-alert {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid #dc3545;
+    color: #dc3545;
+
+    .close-btn {
+      color: #dc3545;
+    }
+  }
+
+  .success-alert {
+    background: rgba(40, 167, 69, 0.1);
+    border: 1px solid #28a745;
+    color: #28a745;
+
+    .close-btn {
+      color: #28a745;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 

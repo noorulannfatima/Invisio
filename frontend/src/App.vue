@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Show Navbar only on non-auth pages -->
+    <!-- Navbar -->
     <Navbar />
     
     <router-view />
