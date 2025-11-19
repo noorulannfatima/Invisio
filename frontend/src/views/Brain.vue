@@ -67,13 +67,35 @@ export default defineComponent({
 <style lang="scss" scoped>
 .brain {
   max-width: 700px;
-  margin: 50px auto;
+  margin-left: 260px;
+  margin-top: 70px;
+  margin-right: auto;
   text-align: center;
   font-family: "Inter", sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem;
+  padding: 2rem;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: calc(100% - 260px);
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-left: 70px;
+    width: calc(100% - 70px);
+    padding: 1rem;
+  }
 
   &__title {
     font-size: 2rem;

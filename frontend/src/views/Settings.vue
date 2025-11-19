@@ -69,6 +69,20 @@ onMounted(async () => {
   min-height: calc(100vh - 70px);
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   max-width: 1200px;
+
+  @media (max-width: 1024px) {
+    margin-left: 80px;
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 80px;
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-left: 70px;
+    padding: 1rem;
+  }
 }
 
 // Page Header
@@ -189,19 +203,9 @@ onMounted(async () => {
   .settings-grid {
     grid-template-columns: 1fr;
   }
-
-  .settings-page {
-    margin-left: 80px;
-    padding: 1.5rem;
-  }
 }
 
 @media (max-width: 768px) {
-  .settings-page {
-    margin-left: 10;
-    padding: 1.5rem;
-  }
-
   .settings-header {
     margin-bottom: 1.5rem;
 
@@ -220,10 +224,6 @@ onMounted(async () => {
 }
 
 @media (max-width: 480px) {
-  .settings-page {
-    padding: 1rem;
-  }
-
   .settings-header {
     .page-title {
       font-size: 1.3rem;

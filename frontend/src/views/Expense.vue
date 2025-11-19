@@ -231,7 +231,12 @@ const updateFilters = (newFilters: FilterState) => {
 
 const applyFilters = async () => {
   try {
-    await expenseStore.fetchAllExpenses(filters.value);
+    const { sortBy, ...rest } = filters.value;
+    const apiFilters = {
+      ...rest,
+      sortBy: sortBy === '' ? undefined : (sortBy as 'newest' | 'oldest' | 'amount-high' | 'amount-low' | 'category')
+    };
+    await expenseStore.fetchAllExpenses(apiFilters);
   } catch (error) {
     console.error('Error applying filters:', error);
   }
@@ -257,43 +262,19 @@ const clearFilters = async () => {
   min-height: 100vh;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  // Large Desktop (1920px and above)
-  @media (min-width: 1920px) {
-    padding: 2.5rem 3rem;
-    margin-left: 280px;
+  @media (max-width: 1024px) {
+    margin-left: 80px;
   }
 
-  // Desktop (1200px to 1919px)
-  @media (min-width: 1200px) {
-    padding: 2rem;
-    margin-left: 260px;
-  }
-
-  // Tablet Landscape (1024px to 1199px)
-  @media (min-width: 1024px) and (max-width: 1199px) {
+  @media (max-width: 768px) {
+    margin-left: 80px;
     padding: 1.5rem;
-    margin-left: 240px;
   }
 
-  // Tablet Portrait (768px to 1023px)
-  @media (min-width: 768px) and (max-width: 1023px) {
-    padding: 1.5rem;
-    margin-left: 100px;
-    margin-top: 60px;
-  }
-
-  // Mobile Landscape (480px to 767px)
-  @media (min-width: 480px) and (max-width: 767px) {
+  @media (max-width: 480px) {
+    margin-left: 70px;
     padding: 1rem;
-    margin-left: 60px;
     margin-top: 50px;
-  }
-
-  // Mobile Portrait (below 480px)
-  @media (max-width: 479px) {
-    padding: 0.75rem;
-    margin-left: 0;
-    margin-top: 45px;
   }
 }
 

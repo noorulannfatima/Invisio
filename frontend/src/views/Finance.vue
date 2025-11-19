@@ -184,6 +184,21 @@ const onBillCreated = async () => {
   padding: 2rem;
   background: linear-gradient(135deg, #f8f9fb 0%, #f0f2f5 100%);
   min-height: calc(100vh - 70px);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 1024px) {
+    margin-left: 80px;
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 80px;
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-left: 70px;
+    padding: 1rem;
+  }
 
   .finance-header {
     display: flex;
@@ -321,8 +336,6 @@ const onBillCreated = async () => {
 
 @media (max-width: 1024px) {
   .page {
-    margin-left: 0;
-
     .finance-header {
       flex-direction: column;
       align-items: flex-start;

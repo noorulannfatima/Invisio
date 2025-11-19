@@ -318,12 +318,17 @@ const formatCurrency = (amount: number): string => {
   margin-left: 260px;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+  @media (max-width: 1024px) {
+    margin-left: 80px;
+  }
+
   @media (max-width: 768px) {
-    margin-left: 0;
+    margin-left: 80px;
     padding: 1.5rem 1rem;
   }
 
   @media (max-width: 480px) {
+    margin-left: 70px;
     padding: 1rem 0.75rem;
   }
 }

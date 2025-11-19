@@ -123,9 +123,18 @@ const refreshCompanyData = async () => {
   min-height: calc(100vh - 70px);
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+  @media (max-width: 1024px) {
+    margin-left: 80px;
+  }
+
   @media (max-width: 768px) {
-    margin-left: 0;
+    margin-left: 80px;
     padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-left: 70px;
+    padding: 1rem;
   }
 }
 
@@ -137,6 +146,10 @@ const refreshCompanyData = async () => {
 
   @media (max-width: 1200px) {
     grid-template-columns: 1fr;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 1.5rem;
   }
 }
 
@@ -206,11 +219,6 @@ const refreshCompanyData = async () => {
 @media (max-width: 480px) {
   .dashboard {
     margin-top: 50px;
-    padding: 1rem;
-  }
-
-  .main-grid {
-    gap: 1.5rem;
   }
 
   .error-banner {

@@ -149,6 +149,21 @@ const fetchStockData = async () => {
   padding: 2rem;
   background-color: #f8f9fb;
   min-height: calc(100vh - 70px);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 1024px) {
+    margin-left: 80px;
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 80px;
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-left: 70px;
+    padding: 1rem;
+  }
 
   .page-title {
     font-size: 1.8rem;
@@ -402,9 +417,6 @@ const fetchStockData = async () => {
 
 @media (max-width: 768px) {
   .page {
-    margin-left: 0;
-    padding: 1rem;
-
     .filters-section {
       grid-template-columns: 1fr;
     }

@@ -335,6 +335,23 @@ const formatCurrency = (value: number): string => {
   width: calc(100% - 260px);
   box-sizing: border-box;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (max-width: 1024px) {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    margin-left: 70px;
+    width: calc(100% - 70px);
+    padding: 1rem;
+  }
 }
 
 // Page Header
@@ -745,11 +762,6 @@ const formatCurrency = (value: number): string => {
 
 // Responsive: Laptop (1200px - 1024px)
 @media (max-width: 1200px) {
-  .inventory {
-    width: calc(100% - 260px);
-    padding: 1.5rem;
-  }
-
   .inventory-header {
     h1 {
       font-size: 1.75rem;
@@ -776,12 +788,6 @@ const formatCurrency = (value: number): string => {
 
 // Responsive: Tablet (1024px - 768px)
 @media (max-width: 1024px) {
-  .inventory {
-    margin-left: 70px;
-    width: calc(100% - 70px);
-    padding: 1.5rem 1rem;
-  }
-
   .inventory-header {
     flex-direction: column;
     align-items: flex-start;
