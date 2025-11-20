@@ -98,8 +98,8 @@
                   <td>{{ item.Item_Name }}</td>
                   <td>{{ item.Description || '-' }}</td>
                   <td>{{ item.Quantity }}</td>
-                  <td>${{ item.Unit_Price.toFixed(2) }}</td>
-                  <td>${{ item.Total_Price.toFixed(2) }}</td>
+                  <td>Rs {{ item.Unit_Price.toFixed(0) }}</td>
+                  <td>Rs {{ item.Total_Price.toFixed(0) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -110,15 +110,15 @@
         <div class="totals-section">
           <div class="total-row" v-if="transaction.Discount_Amount">
             <span>Discount:</span>
-            <span>-${{ transaction.Discount_Amount.toFixed(2) }}</span>
+            <span>-Rs {{ transaction.Discount_Amount.toFixed(0) }}</span>
           </div>
           <div class="total-row" v-if="transaction.Tax_Amount">
             <span>Tax:</span>
-            <span>${{ transaction.Tax_Amount.toFixed(2) }}</span>
+            <span>Rs {{ transaction.Tax_Amount.toFixed(0) }}</span>
           </div>
           <div class="total-row grand-total">
             <span>Total Amount:</span>
-            <span>${{ transaction.Total_Amount.toFixed(2) }}</span>
+            <span>Rs {{ transaction.Total_Amount.toFixed(0) }}</span>
           </div>
         </div>
 

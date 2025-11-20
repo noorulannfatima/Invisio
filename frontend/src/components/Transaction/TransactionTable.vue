@@ -155,10 +155,7 @@ const formatDate = (date: string): string => {
 };
 
 const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value);
+  return `Rs ${value.toFixed(0)}`;
 };
 
 const getTypeIcon = (type: string): string => {

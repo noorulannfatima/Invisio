@@ -302,11 +302,7 @@ const getTypeIcon = (type: string): string => {
 };
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency: 'PKR',
-    minimumFractionDigits: 0,
-  }).format(amount);
+  return `Rs ${amount.toFixed(0)}`;
 };
 </script>
 

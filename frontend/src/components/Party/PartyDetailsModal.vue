@@ -116,11 +116,7 @@ const formatDate = (date?: string): string => {
 };
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency: 'PKR',
-    minimumFractionDigits: 0,
-  }).format(amount || 0);
+  return `Rs ${(amount || 0).toFixed(0)}`;
 };
 
 const getTypeIcon = (type: string): string => {

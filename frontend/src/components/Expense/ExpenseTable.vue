@@ -84,7 +84,7 @@ defineEmits<{
 }>();
 
 const formatCurrency = (amount: number): string => {
-  return (amount ?? 0).toFixed(2);
+  return (amount ?? 0).toFixed(0);
 };
 
 const formatDate = (date: string | Date | undefined | null): string => {

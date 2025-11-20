@@ -89,9 +89,9 @@ export const generateTransactionPDF = async (
     const tableData = transaction.Line_Items.map((item) => [
       item.Item_Name,
       item.Quantity.toString(),
-      `$${parseFloat(item.Rate.toString()).toFixed(2)}`,
+      `Rs ${parseFloat(item.Rate.toString()).toFixed(0)}`,
       `${item.Discount > 0 ? `-${parseFloat(item.Discount.toString()).toFixed(2)}%` : '-'}`,
-      `$${parseFloat(item.Line_Total.toString()).toFixed(2)}`
+      `Rs ${parseFloat(item.Line_Total.toString()).toFixed(0)}`
     ]);
 
     autoTable(doc, {
@@ -126,13 +126,13 @@ export const generateTransactionPDF = async (
 
   // Subtotal
   doc.text('Subtotal:', totalsX, yPos);
-  doc.text(`$${transaction.Subtotal.toFixed(2)}`, totalsX + 40, yPos, { align: 'right' });
+  doc.text(`Rs ${transaction.Subtotal.toFixed(0)}`, totalsX + 40, yPos, { align: 'right' });
   yPos += 6;
 
   // GST
   if (transaction.GST_Rate && transaction.Tax_Amount) {
     doc.text(`GST (${transaction.GST_Rate}%):`, totalsX, yPos);
-    doc.text(`$${transaction.Tax_Amount.toFixed(2)}`, totalsX + 40, yPos, { align: 'right' });
+    doc.text(`Rs ${transaction.Tax_Amount.toFixed(0)}`, totalsX + 40, yPos, { align: 'right' });
     yPos += 6;
   }
 
@@ -140,7 +140,7 @@ export const generateTransactionPDF = async (
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.text('Total:', totalsX, yPos);
-  doc.text(`$${transaction.Total_Amount.toFixed(2)}`, totalsX + 40, yPos, { align: 'right' });
+  doc.text(`Rs ${transaction.Total_Amount.toFixed(0)}`, totalsX + 40, yPos, { align: 'right' });
   yPos += 10;
 
   // Notes (if any)

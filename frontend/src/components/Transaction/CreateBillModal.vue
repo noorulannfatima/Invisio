@@ -296,11 +296,7 @@ const taxAmount = computed(
 
 const total = computed(() => subtotal.value + taxAmount.value);
 
-const formatCurrency = (value: number): string =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value);
+const formatCurrency = (value: number): string => `Rs ${value.toFixed(0)}`;
 
 const addLineItem = () => {
   formData.value.Line_Items.push({

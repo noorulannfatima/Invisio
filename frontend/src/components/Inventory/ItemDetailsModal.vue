@@ -28,11 +28,11 @@
         </div>
         <div class="detail-row">
           <span class="label">Purchase Price</span>
-          <span class="value">${{ formatCurrency(item.Purchase_Price) }}</span>
+          <span class="value">Rs {{ formatCurrency(item.Purchase_Price) }}</span>
         </div>
         <div class="detail-row">
           <span class="label">Selling Price</span>
-          <span class="value">${{ formatCurrency(item.Selling_Price) }}</span>
+          <span class="value">Rs {{ formatCurrency(item.Selling_Price) }}</span>
         </div>
         <div class="detail-row">
           <span class="label">Profit Margin</span>
@@ -41,7 +41,7 @@
         <div class="detail-row">
           <span class="label">Total Value</span>
           <span class="value highlight">
-            ${{ formatCurrency(item.Selling_Price * item.Current_Stock) }}
+            Rs {{ formatCurrency(item.Selling_Price * item.Current_Stock) }}
           </span>
         </div>
         <div class="detail-row">
@@ -77,7 +77,7 @@ const closeModal = () => {
 };
 
 const formatCurrency = (value: number): string => {
-  return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
 const formatDate = (date?: string): string => {

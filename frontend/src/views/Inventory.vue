@@ -94,8 +94,8 @@
                 {{ item.Current_Stock }}
               </span>
             </td>
-            <td class="text-right">${{ formatCurrency(item.Purchase_Price) }}</td>
-            <td class="text-right">${{formatCurrency(item.Selling_Price) }}</td>
+            <td class="text-right">Rs {{ formatCurrency(item.Purchase_Price) }}</td>
+            <td class="text-right">Rs {{formatCurrency(item.Selling_Price) }}</td>
             <td class="text-center">
               <span :class="['status-badge', getStatusClass(item.Current_Stock)]">
                 {{ getStatusText(item.Current_Stock) }}
@@ -321,7 +321,7 @@ const getStatusText = (stock: number): string => {
 };
 
 const formatCurrency = (value: number): string => {
-  return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 </script>
 

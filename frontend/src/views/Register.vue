@@ -8,58 +8,52 @@
         </div>
 
         <form @submit.prevent="handleRegister" class="auth-form">
-          <!-- Row 1: Name  -->
-          <div class="form-row">
-            <div class="form-group">
-              <label for="name">Full Name</label>
-              <input
-                id="name"
-                v-model="form.name"
-                type="text"
-                placeholder="Enter your full name"
-                required
-                :disabled="authStore.isLoading"
-              />
-              <div v-if="validationErrors.name" class="validation-error">
-                <small>{{ validationErrors.name }}</small>
-              </div>
+          <!-- Row 1: Username -->
+          <div class="form-group">
+            <label for="name">Username</label>
+            <input
+              id="name"
+              v-model="form.name"
+              type="text"
+              placeholder="Enter username"
+              required
+              :disabled="authStore.isLoading"
+            />
+            <div v-if="validationErrors.name" class="validation-error">
+              <small>{{ validationErrors.name }}</small>
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="email">Email Address</label>
-              <input
-                id="email"
-                v-model="form.email"
-                type="email"
-                placeholder="Enter your email"
-                required
-                :disabled="authStore.isLoading"
-              />
-              <div v-if="validationErrors.email" class="validation-error">
-                <small>{{ validationErrors.email }}</small>
-              </div>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              id="email"
+              v-model="form.email"
+              type="email"
+              placeholder="Enter your email"
+              required
+              :disabled="authStore.isLoading"
+            />
+            <div v-if="validationErrors.email" class="validation-error">
+              <small>{{ validationErrors.email }}</small>
             </div>
           </div>
 
           <!-- Row 2: Mobile Number -->
-          <div class="form-row">
-            <div class="form-group">
-              <label for="mobileNumber">Mobile Number</label>
-              <input
-                id="mobileNumber"
-                v-model="form.mobileNumber"
-                type="tel"
-                placeholder="Enter mobile number"
-                required
-                :disabled="authStore.isLoading"
-                minlength="10"
-                maxlength="20"
-              />
-              <div v-if="validationErrors.mobileNumber" class="validation-error">
-                <small>{{ validationErrors.mobileNumber }}</small>
-              </div>
+          <div class="form-group">
+            <label for="mobileNumber">Mobile Number</label>
+            <input
+              id="mobileNumber"
+              v-model="form.mobileNumber"
+              type="tel"
+              placeholder="Enter mobile number"
+              required
+              :disabled="authStore.isLoading"
+              minlength="10"
+              maxlength="20"
+            />
+            <div v-if="validationErrors.mobileNumber" class="validation-error">
+              <small>{{ validationErrors.mobileNumber }}</small>
             </div>
           </div>
 
@@ -175,7 +169,7 @@ const validationErrors = reactive({
 const validateField = (fieldName: string): string => {
   switch (fieldName) {
     case 'name':
-      if (!form.name.trim()) return 'Full name is required'
+      if (!form.name.trim()) return 'Username is required'
       if (form.name.trim().length < 3) return 'Name must be at least 3 characters'
       if (form.name.trim().length > 50) return 'Name must not exceed 50 characters'
       return ''

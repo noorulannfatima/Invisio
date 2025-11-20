@@ -252,7 +252,7 @@ const calculateLineTotal = (item: LineItem) => (item.Quantity || 0) * (item.Rate
 const subtotal = computed(() => formData.value.Line_Items.reduce((sum, i) => sum + calculateLineTotal(i), 0));
 const taxAmount = computed(() => subtotal.value * (formData.value.GST_Rate / 100));
 const total = computed(() => subtotal.value + taxAmount.value);
-const formatCurrency = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+const formatCurrency = (v: number) => `Rs ${v.toFixed(0)}`;
 
 const addLineItem = () => formData.value.Line_Items.push({ Item_ID: 0, Item_Name: '', Quantity: 1, Rate: 0, Discount: 0, Line_Total: 0 });
 const removeLineItem = (index: number) => formData.value.Line_Items.splice(index, 1);
