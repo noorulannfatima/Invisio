@@ -1,31 +1,49 @@
 <template>
-  <div class="brain">
-    <h1 class="brain__title">Your business brain — powered by AI.</h1>
+  <div class="brain-container">
+    <div class="brain">
+      <header class="brain__header">
+        <h1 class="brain__title">Invisio Brain</h1>
+        <p class="brain__subtitle">Your AI-powered business assistant</p>
+      </header>
 
-    <div class="brain__chat-box">
-      <div
-        v-for="(msg, i) in messages"
-        :key="i"
-        :class="['brain__message', msg.sender === 'You' ? 'user' : 'ai']"
-      >
-        <strong>{{ msg.sender }}:</strong>
-        <span>{{ msg.text }}</span>
+      <div class="brain__chat-area" ref="chatContainer">
+        <div
+          v-for="(msg, i) in messages"
+          :key="i"
+          :class="['brain__message', msg.sender === 'You' ? 'user' : 'ai']"
+        >
+          <div class="brain__message-content">
+            <strong class="brain__sender">{{ msg.sender }}</strong>
+            <span class="brain__text" v-html="formatMessage(msg.text)"></span>
+          </div>
+        </div>
+        <div v-if="isLoading" class="brain__message ai loading">
+          <div class="typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="brain__input-area">
+        <form class="brain__form" @submit.prevent="sendMessage">
+          <input
+            v-model="userMessage"
+            placeholder="Ask anything about your business..."
+            class="brain__input"
+            :disabled="isLoading"
+          />
+          <button type="submit" class="brain__btn" :disabled="isLoading || !userMessage.trim()">
+            <span v-if="!isLoading">Send</span>
+            <span v-else>...</span>
+          </button>
+        </form>
       </div>
     </div>
-
-    <form class="brain__form" @submit.prevent="sendMessage">
-      <input
-        v-model="userMessage"
-        placeholder="Ask something..."
-        class="brain__input"
-      />
-      <button type="submit" class="brain__btn">Send</button>
-    </form>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, nextTick, watch } from "vue";
 
 interface Message {
   sender: string;
@@ -37,13 +55,29 @@ export default defineComponent({
   setup() {
     const userMessage = ref<string>("");
     const messages = ref<Message[]>([]);
+    const isLoading = ref(false);
+    const chatContainer = ref<HTMLElement | null>(null);
+
+    const scrollToBottom = async () => {
+      await nextTick();
+      if (chatContainer.value) {
+        chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+      }
+    };
+
+    // Simple formatter to handle newlines
+    const formatMessage = (text: string) => {
+      return text.replace(/\n/g, '<br>');
+    };
 
     const sendMessage = async () => {
-      if (!userMessage.value.trim()) return;
+      if (!userMessage.value.trim() || isLoading.value) return;
 
       const userMsg = userMessage.value;
       messages.value.push({ sender: "You", text: userMsg });
       userMessage.value = "";
+      isLoading.value = true;
+      scrollToBottom();
 
       try {
         const res = await fetch("http://localhost:3000/api/ai/chat", {
@@ -55,127 +89,227 @@ export default defineComponent({
         });
 
         const data = await res.json();
-        messages.value.push({ sender: "AI", text: data.reply });
+        if (data.error) {
+           messages.value.push({ sender: "AI", text: `Error: ${data.error}` });
+        } else {
+           messages.value.push({ sender: "AI", text: data.reply });
+        }
       } catch (err) {
         console.error("AI Error:", err);
-        messages.value.push({ sender: "AI", text: "Error getting response." });
+        messages.value.push({ sender: "AI", text: "Sorry, I encountered an error connecting to the server." });
+      } finally {
+        isLoading.value = false;
+        scrollToBottom();
       }
     };
 
-    return { userMessage, messages, sendMessage };
+    return { userMessage, messages, sendMessage, isLoading, chatContainer, formatMessage };
   },
 });
 </script>
 
 <style lang="scss" scoped>
-.brain {
-  max-width: 700px;
-  margin-left: 260px;
-  margin-top: 70px;
-  margin-right: auto;
-  text-align: center;
-  font-family: "Inter", sans-serif;
+.brain-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  width: calc(100% - 260px);
+  justify-content: center;
+  background-color: #121212; /* Dark background */
+  min-height: 100vh;
+  width: 100%;
+  padding-left: 260px; /* Sidebar width */
   box-sizing: border-box;
+  color: #e0e0e0;
 
   @media (max-width: 1024px) {
-    margin-left: 80px;
-    width: calc(100% - 80px);
+    padding-left: 80px;
   }
-
+  
   @media (max-width: 768px) {
-    margin-left: 80px;
-    width: calc(100% - 80px);
-    padding: 1.5rem;
+    padding-left: 0; /* Full width on mobile if sidebar hides/overlays */
   }
+}
 
-  @media (max-width: 480px) {
-    margin-left: 70px;
-    width: calc(100% - 70px);
-    padding: 1rem;
+.brain {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+
+  &__header {
+    padding: 2rem 1rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid #333;
   }
 
   &__title {
     font-size: 2rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #2c3e50;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
-  &__chat-box {
-    background: #f7f9fc;
-    padding: 1rem;
-    border-radius: 12px;
-    width: 100%;
-    height: 400px;
+  &__subtitle {
+    color: #888;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  &__chat-area {
+    flex: 1;
     overflow-y: auto;
-    margin-bottom: 1rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    scroll-behavior: smooth;
+
+    /* Custom Scrollbar */
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #1e1e1e;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
   }
 
   &__message {
-    margin: 0.5rem 0;
-    text-align: left;
-    padding: 0.6rem 0.8rem;
-    border-radius: 8px;
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
     max-width: 80%;
-    word-wrap: break-word;
+    animation: fadeIn 0.3s ease;
 
     &.user {
-      background-color: #d1ecf1;
       align-self: flex-end;
-      margin-left: auto;
-      color: #0c5460;
+      align-items: flex-end;
+
+      .brain__message-content {
+        background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);
+        color: #000;
+        border-bottom-right-radius: 2px;
+      }
+      
+      .brain__sender {
+        display: none;
+      }
     }
 
     &.ai {
-      background-color: #e2e3e5;
-      color: #383d41;
       align-self: flex-start;
-      margin-right: auto;
+      align-items: flex-start;
+
+      .brain__message-content {
+        background-color: #2c2c2c;
+        color: #e0e0e0;
+        border-bottom-left-radius: 2px;
+        border: 1px solid #333;
+      }
+      
+      .brain__sender {
+        color: #4facfe;
+        margin-bottom: 4px;
+        display: block;
+        font-size: 0.8rem;
+      }
     }
+  }
+
+  &__message-content {
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 1rem;
+    line-height: 1.5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    word-wrap: break-word;
+  }
+
+  &__input-area {
+    padding: 1.5rem;
+    background-color: #121212;
+    border-top: 1px solid #333;
   }
 
   &__form {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
+    gap: 10px;
+    background: #1e1e1e;
+    padding: 8px;
+    border-radius: 30px;
+    border: 1px solid #333;
+    transition: border-color 0.3s;
+
+    &:focus-within {
+      border-color: #4facfe;
+    }
   }
 
   &__input {
     flex: 1;
-    padding: 0.6rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 10px 15px;
     font-size: 1rem;
     outline: none;
 
-    &:focus {
-      border-color: #3498db;
+    &::placeholder {
+      color: #666;
     }
   }
 
   &__btn {
-    padding: 0.6rem 1.2rem;
-    margin-left: 0.5rem;
-    background-color: #3498db;
-    color: white;
+    background: #4facfe;
+    color: #000;
     border: none;
-    border-radius: 8px;
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-weight: 600;
     cursor: pointer;
-    font-size: 1rem;
-    transition: background 0.3s;
+    transition: transform 0.2s, opacity 0.2s;
 
-    &:hover {
-      background-color: #2980b9;
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: #00f2fe;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px;
+  
+  span {
+    width: 6px;
+    height: 6px;
+    background: #888;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+    
+    &:nth-child(1) { animation-delay: -0.32s; }
+    &:nth-child(2) { animation-delay: -0.16s; }
+  }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

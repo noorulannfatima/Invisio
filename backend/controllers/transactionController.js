@@ -399,7 +399,7 @@ const getInvoiceById = async (req, res) => {
         {
           model: Party,
           as: 'Party',
-          attributes: ['Party_ID', 'Name', 'Type', 'Email', 'Mobile_Number', 'Address', 'GST_Number']
+          attributes: ['Party_ID', 'Name', 'Type', 'Mobile']
         },
         {
           model: TransactionLineItem,

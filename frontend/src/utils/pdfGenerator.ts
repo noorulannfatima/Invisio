@@ -89,9 +89,9 @@ export const generateTransactionPDF = async (
     const tableData = transaction.Line_Items.map((item) => [
       item.Item_Name,
       item.Quantity.toString(),
-      `$${item.Rate.toFixed(2)}`,
-      `${item.Discount > 0 ? `-${item.Discount.toFixed(2)}%` : '-'}`,
-      `$${item.Line_Total.toFixed(2)}`
+      `$${parseFloat(item.Rate.toString()).toFixed(2)}`,
+      `${item.Discount > 0 ? `-${parseFloat(item.Discount.toString()).toFixed(2)}%` : '-'}`,
+      `$${parseFloat(item.Line_Total.toString()).toFixed(2)}`
     ]);
 
     autoTable(doc, {

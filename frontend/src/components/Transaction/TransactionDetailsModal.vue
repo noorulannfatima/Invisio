@@ -179,7 +179,8 @@ const formatDate = (date: string) => {
   });
 };
 
-const getStatusClass = (status: string) => {
+const getStatusClass = (status: string | undefined) => {
+  if (!status) return 'badge-secondary';
   switch (status.toLowerCase()) {
     case 'paid':
       return 'badge-success';

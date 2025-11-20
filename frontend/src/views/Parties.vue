@@ -6,7 +6,7 @@
         <h1 class="page-title">Party Management</h1>
         <button class="btn btn-primary" @click="showCreateModal = true">
           <i class="fas fa-plus"></i>
-          <span class="btn-text">Add New Party</span>
+          Add New Party
         </button>
       </div>
     </div>
@@ -1024,13 +1024,6 @@ const formatCurrency = (amount: number): string => {
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
 
-    .btn-text {
-      display: none;
-    }
-
-    &::before {
-      content: '+';
-    }
   }
 
   &.btn-primary {

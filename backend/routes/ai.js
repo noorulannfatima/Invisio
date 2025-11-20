@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const fetch = require("node-fetch"); // Required for Node <18
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 router.post("/chat", async (req, res) => {
   const { message } = req.body;
@@ -10,17 +13,17 @@ router.post("/chat", async (req, res) => {
   }
 
   try {
-    // Call Monkedev free AI API
-    const response = await fetch(`https://api.monkedev.com/fun/chat?msg=${encodeURIComponent(message)}`);
-    const data = await response.json();
+    // For text-only input, use the gemini-2.0-flash model
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    // The API returns something like: { response: "AI reply text" }
-    const reply = data.response || "Sorry, I couldn’t generate a response.";
+    const result = await model.generateContent(message);
+    const response = await result.response;
+    const text = response.text();
 
-    res.json({ reply });
+    res.json({ reply: text });
   } catch (err) {
     console.error("AI API error:", err);
-    res.status(500).json({ error: "Failed to connect to AI API" });
+    res.status(500).json({ error: "Failed to generate response from AI", details: err.message });
   }
 });
 
