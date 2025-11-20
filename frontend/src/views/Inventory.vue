@@ -331,26 +331,21 @@ const formatCurrency = (value: number): string => {
   margin-top: 70px;
   padding: 2rem;
   background-color: #f5f6fa;
-  min-height: calc(100vh - 70px);
-  width: calc(100% - 260px);
-  box-sizing: border-box;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (max-width: 1024px) {
     margin-left: 80px;
-    width: calc(100% - 80px);
   }
 
   @media (max-width: 768px) {
     margin-left: 80px;
-    width: calc(100% - 80px);
-    padding: 1.5rem;
+    padding: 1.5rem 0.75rem;
   }
 
   @media (max-width: 480px) {
     margin-left: 70px;
-    width: calc(100% - 70px);
-    padding: 1rem;
+    padding: 1rem 0.75rem;
+    margin-top: 50px;
   }
 }
 
@@ -561,7 +556,7 @@ const formatCurrency = (value: number): string => {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  overflow-x: auto; // Enable horizontal scroll
   width: 100%;
   box-sizing: border-box;
 }
@@ -569,6 +564,7 @@ const formatCurrency = (value: number): string => {
 .items-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px; // Ensure table has minimum width to trigger scroll
 
   thead {
     background-color: #f7fafc;
@@ -828,12 +824,7 @@ const formatCurrency = (value: number): string => {
 
 // Responsive: Mobile (768px and below)
 @media (max-width: 768px) {
-  .inventory {
-    margin-left: 0;
-    width: 100%;
-    margin-top: 60px;
-    padding: 1rem;
-  }
+  // .inventory rule removed to prevent margin conflict
 
   .inventory-header {
     flex-direction: column;
@@ -904,9 +895,7 @@ const formatCurrency = (value: number): string => {
 
 // Responsive: Small Mobile (480px and below)
 @media (max-width: 480px) {
-  .inventory {
-    padding: 0.75rem;
-  }
+  // .inventory rule removed to prevent padding conflict
 
   .inventory-header {
     h1 {

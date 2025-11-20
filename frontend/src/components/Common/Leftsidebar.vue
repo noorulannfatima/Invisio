@@ -6,7 +6,9 @@
       <div class="logo-section">
         <div class="logo">
           <i class="fas fa-cube"></i>
-          <span class="logo-text">Invisio</span>
+          <span class="logo-text" :title="settingStore.company?.Name || 'Invisio'">
+            {{ settingStore.company?.Name || 'Invisio' }}
+          </span>
         </div>
       </div>
 
@@ -41,9 +43,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/authStore'
+import { useSettingStore } from '@/store/settingStore'
 
 interface MenuItem {
   label: string
@@ -53,6 +56,7 @@ interface MenuItem {
 
 const route = useRoute()
 const authStore = useAuthStore()
+const settingStore = useSettingStore()
 
 const menuItems: MenuItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: 'fas fa-home' },
@@ -76,6 +80,12 @@ const getInitials = (name?: string): string => {
     .toUpperCase()
     .slice(0, 2)
 }
+
+onMounted(async () => {
+  if (!settingStore.company) {
+    await settingStore.fetchCompanyDetails()
+  }
+})
 </script>
 
 
@@ -85,12 +95,13 @@ const getInitials = (name?: string): string => {
   width: 260px;
   background: linear-gradient(180deg, #1e1e2d 0%, #252d3d 100%);
   color: #fff;
-  height: 100vh;
+  // height: 100vh; // Removed fixed height
   display: flex;
   flex-direction: column;
   position: fixed;
   left: 0;
   top: 70px;
+  bottom: 0; // Stretch to bottom
   z-index: 10;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);

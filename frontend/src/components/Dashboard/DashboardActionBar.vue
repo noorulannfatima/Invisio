@@ -5,15 +5,11 @@
       <span class="icon">+</span>
       Create Company
     </button>
-    <div v-else class="company-info-bar">
-      <span class="company-name">{{ companyStore.companyName }}</span>
-    </div>
+    <!-- Company name removed as per request -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { useCompanyStore } from '@/store/companyStore';
-
 interface Props {
   isCompanyCreated: boolean;
 }
@@ -23,8 +19,6 @@ defineProps<Props>();
 defineEmits<{
   'create-company': [];
 }>();
-
-const companyStore = useCompanyStore();
 </script>
 
 <style scoped lang="scss">
@@ -35,15 +29,7 @@ const companyStore = useCompanyStore();
   margin-bottom: 2rem;
 
   .company-info-bar {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-
-    .company-name {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #2d3748;
-    }
+    display: none;
   }
 }
 
