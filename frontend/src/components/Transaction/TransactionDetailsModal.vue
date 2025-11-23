@@ -63,43 +63,33 @@
           <h3>{{ transaction.Transaction_Type === 'Sale' ? 'Customer' : 'Vendor' }} Information</h3>
           <div class="info-row">
             <span class="label">Name:</span>
-            <span class="value">{{ transaction.Party.Party_Name }}</span>
+            <span class="value">{{ transaction.Party.Name }}</span>
           </div>
-          <div class="info-row" v-if="transaction.Party.Email">
-            <span class="label">Email:</span>
-            <span class="value">{{ transaction.Party.Email }}</span>
-          </div>
-          <div class="info-row" v-if="transaction.Party.Phone_Number">
+          <div class="info-row" v-if="transaction.Party.Mobile">
             <span class="label">Phone:</span>
-            <span class="value">{{ transaction.Party.Phone_Number }}</span>
-          </div>
-          <div class="info-row" v-if="transaction.Party.Address">
-            <span class="label">Address:</span>
-            <span class="value">{{ transaction.Party.Address }}</span>
+            <span class="value">{{ transaction.Party.Mobile }}</span>
           </div>
         </div>
 
         <!-- Line Items -->
-        <div v-if="transaction.TransactionLineItems && transaction.TransactionLineItems.length > 0" class="line-items-section">
+        <div v-if="transaction.Line_Items && transaction.Line_Items.length > 0" class="line-items-section">
           <h3>Items</h3>
           <div class="table-wrapper">
             <table class="items-table">
               <thead>
                 <tr>
                   <th>Item</th>
-                  <th>Description</th>
                   <th>Qty</th>
                   <th>Unit Price</th>
                   <th>Total</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in transaction.TransactionLineItems" :key="item.Transaction_Line_Item_ID">
+                <tr v-for="item in transaction.Line_Items" :key="item.Line_ID">
                   <td>{{ item.Item_Name }}</td>
-                  <td>{{ item.Description || '-' }}</td>
                   <td>{{ item.Quantity }}</td>
-                  <td>Rs {{ item.Unit_Price.toFixed(0) }}</td>
-                  <td>Rs {{ item.Total_Price.toFixed(0) }}</td>
+                  <td>Rs {{ Number(item.Rate).toFixed(0) }}</td>
+                  <td>Rs {{ Number(item.Line_Total).toFixed(0) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -108,24 +98,10 @@
 
         <!-- Totals -->
         <div class="totals-section">
-          <div class="total-row" v-if="transaction.Discount_Amount">
-            <span>Discount:</span>
-            <span>-Rs {{ transaction.Discount_Amount.toFixed(0) }}</span>
-          </div>
-          <div class="total-row" v-if="transaction.Tax_Amount">
-            <span>Tax:</span>
-            <span>Rs {{ transaction.Tax_Amount.toFixed(0) }}</span>
-          </div>
           <div class="total-row grand-total">
             <span>Total Amount:</span>
-            <span>Rs {{ transaction.Total_Amount.toFixed(0) }}</span>
+            <span>Rs {{ Number(transaction.Total_Amount).toFixed(0) }}</span>
           </div>
-        </div>
-
-        <!-- Notes -->
-        <div v-if="transaction.Notes" class="notes-section">
-          <h3>Notes</h3>
-          <p>{{ transaction.Notes }}</p>
         </div>
       </div>
 

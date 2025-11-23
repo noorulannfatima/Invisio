@@ -114,17 +114,25 @@ export default defineComponent({
   justify-content: center;
   background-color: #121212; /* Dark background */
   min-height: 100vh;
-  width: 100%;
-  padding-left: 260px; /* Sidebar width */
+  // width: 100%; // Removed to prevent overflow with margin-left
+  margin-left: 260px; /* Sidebar width */
+  padding-left: 0;
   box-sizing: border-box;
   color: #e0e0e0;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (max-width: 1024px) {
-    padding-left: 80px;
+    margin-left: 80px;
   }
   
   @media (max-width: 768px) {
-    padding-left: 0; /* Full width on mobile if sidebar hides/overlays */
+    margin-left: 80px;
+    padding: 1.5rem;
+  }
+  @media (max-width: 480px) {
+    margin-left: 70px;
+    padding: 1rem;
+    margin-top: 40px;
   }
 }
 
