@@ -56,10 +56,19 @@
               <span class="amount">{{ formatCurrency(txn.Total_Amount) }}</span>
             </td>
             <td class="status-col">
-              <span class="status-badge" :class="txn.Status.toLowerCase()">
+              <div class="status-select-wrapper" :class="txn.Status.toLowerCase()">
                 <i :class="getStatusIcon(txn.Status)"></i>
-                {{ txn.Status }}
-              </span>
+                <select 
+                  :value="txn.Status" 
+                  @change="updateStatus(txn.Transaction_ID, ($event.target as HTMLSelectElement).value)"
+                  class="status-select"
+                  :disabled="store.loading"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
             </td>
             <td class="actions-col">
               <button 
@@ -142,6 +151,14 @@ const handleDeleteConfirm = async () => {
   } catch (err) {
     console.error('Failed to delete transaction:', err);
     // Error is already handled in the store
+  }
+};
+
+const updateStatus = async (transactionId: number, newStatus: string) => {
+  try {
+    await store.updateTransactionStatus(transactionId, newStatus);
+  } catch (err) {
+    console.error('Failed to update status:', err);
   }
 };
 
@@ -374,47 +391,69 @@ const getStatusIcon = (status: string): string => {
             }
 
             &.status-col {
-              width: 130px;
+              width: 150px;
 
-              .status-badge {
+              .status-select-wrapper {
                 display: inline-flex;
                 align-items: center;
                 gap: 0.4rem;
-                padding: 0.4rem 0.8rem;
+                padding: 0.3rem 0.6rem;
                 border-radius: 6px;
-                font-size: 0.85rem;
-                font-weight: 600;
-                white-space: nowrap;
+                position: relative;
+                transition: all 0.2s ease;
+                width: 100%; /* Ensure wrapper takes full width */
 
                 i {
                   font-size: 0.9rem;
+                  pointer-events: none;
+                  z-index: 1;
+                  flex-shrink: 0; /* Prevent icon from shrinking */
+                }
+
+                .status-select {
+                  appearance: none;
+                  background: transparent;
+                  border: none;
+                  font-size: 0.85rem;
+                  font-weight: 600;
+                  color: inherit;
+                  cursor: pointer;
+                  padding-right: 0.5rem; 
+                  outline: none;
+                  width: 100%;
+                  font-family: inherit;
+                  text-overflow: ellipsis; /* Handle overflow gracefully */
+
+                  option {
+                    background: white;
+                    color: #333;
+                    padding: 0.5rem;
+                  }
                 }
 
                 &.completed {
                   background: rgba(40, 167, 69, 0.15);
                   color: #28a745;
 
-                  i {
-                    color: #28a745;
-                  }
+                  i { color: #28a745; }
                 }
 
                 &.pending {
                   background: rgba(255, 193, 7, 0.15);
-                  color: #ffc107;
+                  color: #856404; /* Darker yellow for better text contrast */
 
-                  i {
-                    color: #ffc107;
-                  }
+                  i { color: #ffc107; }
                 }
 
                 &.cancelled {
                   background: rgba(220, 53, 69, 0.15);
                   color: #dc3545;
 
-                  i {
-                    color: #dc3545;
-                  }
+                  i { color: #dc3545; }
+                }
+                
+                &:hover {
+                  filter: brightness(0.95);
                 }
               }
             }

@@ -1,5 +1,4 @@
 // routes/transactionRoutes.js
-// routes/transactionRoutes.js
 const express = require('express');
 const {
   createInvoice,
@@ -7,7 +6,8 @@ const {
   getInvoiceById,
   getAllInvoices,
   getGSTSummary,
-  deleteTransaction
+  deleteTransaction,
+  updateTransactionStatus
 } = require('../controllers/transactionController');
 const { protectRoute } = require('../middleware/authMiddleware');
 
@@ -36,5 +36,8 @@ router.get('/:transactionId', getInvoiceById);
 // DELETE /api/transaction/:transactionId - Soft delete transaction (reverses stock)
 router.delete('/:transactionId', deleteTransaction);
 
+
+// Update transaction status
+router.patch('/:transactionId/status', updateTransactionStatus);
 
 module.exports = router;

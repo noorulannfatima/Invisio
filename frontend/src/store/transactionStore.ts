@@ -249,6 +249,35 @@ const transactionAPI = {
       console.error('deleteTransaction API error:', error);
       throw error;
     }
+  },
+
+  async updateTransactionStatus(transactionId: number, status: string): Promise<{ message: string; transaction: any }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${transactionId}/status`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({ Status: status })
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Server returned non-JSON response (${response.status}). Check if API endpoint exists.`);
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('updateTransactionStatus API error:', error);
+      throw error;
+    }
   }
 };
 
@@ -403,6 +432,33 @@ export const useTransactionStore = defineStore('transaction', () => {
     }
   };
 
+  const updateTransactionStatus = async (transactionId: number, status: string): Promise<void> => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const result = await transactionAPI.updateTransactionStatus(transactionId, status);
+      
+      // Update local state
+      const invoice = invoices.value.find(inv => inv.Transaction_ID === transactionId);
+      if (invoice) {
+        invoice.Status = result.transaction.Status;
+      }
+      
+      if (currentInvoice.value?.Transaction_ID === transactionId) {
+        currentInvoice.value.Status = result.transaction.Status;
+      }
+      
+      console.log('Transaction status updated successfully:', result.message);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error occurred';
+      error.value = errorMsg;
+      console.error('Store updateTransactionStatus error:', errorMsg);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   const setFilters = (newFilters: TransactionFilters): void => {
     filters.value = { ...filters.value, ...newFilters };
   };
@@ -444,6 +500,7 @@ export const useTransactionStore = defineStore('transaction', () => {
     fetchAllInvoices,
     fetchGSTSummary,
     deleteTransaction,
+    updateTransactionStatus,
     setFilters,
     clearFilters,
     clearError,

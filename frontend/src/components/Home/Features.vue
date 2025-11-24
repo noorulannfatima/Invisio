@@ -30,7 +30,7 @@
       <div class="features-cta fade-in-scroll" style="animation-delay: 0.3s">
         <h3>Ready to transform your business?</h3>
         <p>Join thousands of businesses already using Invisio</p>
-        <button class="cta-button">Start Free Trial</button>
+        <button class="cta-button" @click="router.push('/register')">Start Free Trial</button>
       </div>
     </div>
   </section>
@@ -38,6 +38,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 interface Feature {
   id: number;

@@ -38,16 +38,6 @@
               <p>Gujranwala, Punjab, Pakistan</p>
             </div>
           </div>
-
-          <div class="info-item">
-            <div class="icon">
-              <i class="fas fa-clock"></i>
-            </div>
-            <div class="info-text">
-              <h3>Business Hours</h3>
-              <p>Mon - Fri: 9:00 AM - 6:00 PM</p>
-            </div>
-          </div>
         </div>
         
         <div class="contact-form">

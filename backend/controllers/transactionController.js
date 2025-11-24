@@ -752,11 +752,64 @@ const deleteTransaction = async (req, res) => {
 };
 
 
+// Update transaction status
+const updateTransactionStatus = async (req, res) => {
+  try {
+    const userId = req.user.User_ID;
+    const { transactionId } = req.params;
+    const { Status } = req.body;
+
+    // Validate status
+    const validStatuses = ['Pending', 'Completed', 'Cancelled'];
+    if (!validStatuses.includes(Status)) {
+      return res.status(400).json({ message: "Invalid status. Must be Pending, Completed, or Cancelled" });
+    }
+
+    // Get user's company
+    const company = await Company.findOne({
+      where: { User_ID: userId, is_deleted: false }
+    });
+
+    if (!company) {
+      return res.status(400).json({ message: "User must have an active company" });
+    }
+
+    // Find transaction
+    const transaction = await Transaction.findOne({
+      where: {
+        Transaction_ID: transactionId,
+        Company_ID: company.Company_ID,
+        Is_Deleted: false
+      }
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    // Update status
+    transaction.Status = Status;
+    await transaction.save();
+
+    res.json({
+      message: "Transaction status updated successfully",
+      transaction: {
+        Transaction_ID: transaction.Transaction_ID,
+        Status: transaction.Status
+      }
+    });
+  } catch (error) {
+    console.error("Error in updateTransactionStatus:", error.message);
+    res.status(500).json({ message: error.message || "Internal server error" });
+  }
+};
+
 module.exports = {
   createInvoice,
   createPurchaseBill,
   getInvoiceById,
   getAllInvoices,
   getGSTSummary,
-  deleteTransaction
+  deleteTransaction,
+  updateTransactionStatus
 };
