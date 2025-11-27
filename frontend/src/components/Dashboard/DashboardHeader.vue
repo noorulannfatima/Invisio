@@ -1,4 +1,3 @@
-// DashboardHeader.vue // remove 
 <template>
   <div class="dashboard-header">
     <h1 class="dashboard-title">Dashboard</h1>

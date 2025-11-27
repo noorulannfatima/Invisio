@@ -99,7 +99,7 @@ const getMyCompany = async (req, res) => {
     });
 
     if (!company) {
-      return res.status(404).json({ message: "Company not found" });
+      return res.json(null);
     }
 
     res.json({

@@ -1,13 +1,13 @@
 <template>
   <div class="sidebar-wrapper">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" :class="{ 'no-transition': !isLoaded }">
       <!-- Logo Section -->
       <div class="logo-section">
         <div class="logo">
           <i class="fas fa-cube"></i>
-          <span class="logo-text" :title="settingStore.company?.Name || 'Invisio'">
-            {{ settingStore.company?.Name || 'Invisio' }}
+          <span class="logo-text" :title="companyStore.company?.Name || 'Create Company'">
+            {{ companyStore.company?.Name || 'Create Company' }}
           </span>
         </div>
       </div>
@@ -43,10 +43,10 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/authStore'
-import { useSettingStore } from '@/store/settingStore'
+import { useCompanyStore } from '@/store/companyStore'
 
 interface MenuItem {
   label: string
@@ -56,7 +56,8 @@ interface MenuItem {
 
 const route = useRoute()
 const authStore = useAuthStore()
-const settingStore = useSettingStore()
+const companyStore = useCompanyStore()
+const isLoaded = ref(false)
 
 const menuItems: MenuItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: 'fas fa-home' },
@@ -82,8 +83,13 @@ const getInitials = (name?: string): string => {
 }
 
 onMounted(async () => {
-  if (!settingStore.company) {
-    await settingStore.fetchCompanyDetails()
+  // Prevent transition on load
+  requestAnimationFrame(() => {
+    isLoaded.value = true
+  })
+
+  if (!companyStore.company) {
+    await companyStore.fetchMyCompany()
   }
 })
 </script>
@@ -105,6 +111,10 @@ onMounted(async () => {
   z-index: 10;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.no-transition {
+    transition: none !important;
+  }
 
   // Logo Section
   .logo-section {

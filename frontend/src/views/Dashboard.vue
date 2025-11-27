@@ -1,12 +1,8 @@
 <!-- views/Dashboard.vue -->
 <template>
-  <div class="dashboard">
+  <div class="dashboard" :class="{ 'no-transition': !isLoaded }">
 
-    <!-- Action Bar -->
-    <DashboardActionBar
-      :is-company-created="companyStore.isCompanyCreated"
-      @create-company="openCreateCompanyModal"
-    />
+
     <!-- Welcome Section -->
     <DashboardWelcome
       v-if="!companyStore.isCompanyCreated"
@@ -57,7 +53,7 @@ import { useCompanyStore } from '@/store/companyStore';
 import { useItemStore } from '@/store/itemStore';
 
 // Import Dashboard Components
-import DashboardActionBar from '@/components/Dashboard/DashboardActionBar.vue';
+
 import DashboardWelcome from '@/components/Dashboard/DashboardWelcome.vue';
 import DashboardQuickStats from '@/components/Dashboard/DashboardQuickStats.vue';
 import DashboardFinanceCard from '@/components/Dashboard/DashboardFinanceCard.vue';
@@ -73,8 +69,14 @@ const itemStore = useItemStore();
 
 const showCreateModal = ref(false);
 const isRefreshing = ref(false);
+const isLoaded = ref(false);
 
 onMounted(async () => {
+  // Prevent transition on load
+  requestAnimationFrame(() => {
+    isLoaded.value = true;
+  });
+
   try {
     await companyStore.fetchMyCompany();
     await loadInventoryData();
@@ -122,6 +124,10 @@ const refreshCompanyData = async () => {
   background-color: #f5f6fa;
   min-height: calc(100vh - 70px);
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.no-transition {
+    transition: none !important;
+  }
 
   @media (max-width: 1024px) {
     margin-left: 80px;

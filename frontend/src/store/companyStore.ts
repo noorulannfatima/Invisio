@@ -101,6 +101,14 @@ export const useCompanyStore = defineStore('company', () => {
       const response = await apiCall('/company/me', 'GET');
       company.value = response;
       return response;
+    } catch (err) {
+      // If company is not found, it's not an error state for the UI, 
+      // just means the user hasn't created one yet.
+      if (err instanceof Error && err.message === 'Company not found') {
+        company.value = null;
+        return null;
+      }
+      throw err;
     } finally {
       isLoading.value = false;
     }
