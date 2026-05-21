@@ -162,36 +162,7 @@ npx sequelize-cli db:seed:all
 
 ---
 
-## Screenshot / demo mode (no backend)
-
-Browse every page with **mock data** — no Postgres, no API, no login.
-
-```bash
-cd frontend
-npm run dev:demo
-# or: set VITE_DEMO_MODE=true in .env and npm run dev
-```
-
-Open `http://localhost:5173`. You can go directly to any route, for example:
-
-| Page | URL |
-|------|-----|
-| Home | `/` |
-| Login | `/login` |
-| Register | `/register` |
-| Dashboard | `/dashboard` |
-| Inventory | `/inventory` |
-| Parties | `/parties` |
-| Expenses | `/expense` |
-| Transactions | `/finance` |
-| Profit & Loss | `/profit-loss` |
-| Stock Summary | `/stock-summary` |
-| Party Ledger | `/party-ledger` |
-| AI Brain | `/brain` |
-| Settings | `/settings` |
-| Reports | `/reports` |
-
-Turn off demo mode: set `VITE_DEMO_MODE=false` in `frontend/.env`.
+## Screenshot 
 
 ---
 
